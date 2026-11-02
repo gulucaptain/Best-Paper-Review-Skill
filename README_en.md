@@ -47,7 +47,9 @@ The host model makes the scientific judgements; scripts handle extraction, retri
 
 **📄 PDF** → 🧭 understand & split contributions → 🔎 parallel novelty search → ✅ nine-dimension check → 🛡️ counter-evidence & grading → 🧑‍⚖️ independent critique → ⚖️ verdict & symmetry check → 📦 reader + English draft
 
-> Use best-paper-review on `paper.pdf`: full review, target venue ICML 2026, arXiv v1.
+> Use best-paper-review to review `paper.pdf`
+
+Optional: say which version to review (e.g. arXiv v1), or name a target venue to use its form; otherwise a generic form is used.
 
 | Mode | When | Output |
 |---|---|---|
