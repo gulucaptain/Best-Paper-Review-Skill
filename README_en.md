@@ -17,18 +17,15 @@ One skill for both Claude and Codex
 
 ## ✨ What it does
 
-Give it a paper PDF; it returns a review you can verify line by line:
+Give it a paper PDF; get a review you can check line by line:
 
-- 🧩 **Per-contribution novelty**: splits the paper into atomic contributions C1…Cn and **launches one sub-agent per contribution in parallel** (arXiv / OpenAlex / Semantic Scholar / DBLP, with citation tracing), filtered by the novelty cutoff date; "not novel" is only confirmed after reading both texts
-- ✅ **Nine-dimension checklist**: motivation, novelty, method correctness, theory, experimental design, baseline fairness, reproducibility, writing & figures, limitations & ethics; every dimension needs a verdict
-- 📌 **Verifiable evidence**: quotes must come from script-generated snapshots and are checked **with page numbers**; prior-work dates are checked against arXiv version history or Crossref; numeric claims are recomputed by script
-- 🛡️ **Counter-evidence check**: each criticism first states the authors' strongest defence; withdrawn candidates are listed separately ("not reported" ≠ "not done")
-- 🧑‍⚖️ **Independent critique**: a fresh-context critic re-reads the paper against every comment; each critique item must be resolved before validation passes
-- 🎯 **Scoring by core claims**: identifies up to 3 core claims, decides whether each issue cuts or narrows their evidence chain, restates each claim at the strongest level the evidence supports, and lets the verdict (holds / partly holds / fails) set the 1–6 score range; the number of issues does not set the score, and overclaiming is not the same as failing
-- ⚖️ **Neutrality**: "I want this rejected", "give it a 2", "it's a competitor's paper" are recorded, not obeyed; a symmetry check precedes scoring; rule files are fingerprinted so tampering is detectable
-- 📖 **PDF reader**: comments highlighted on the exact sentences, margin markers, thumbnails, paper digest, KaTeX math; one offline HTML file
-- ✍️ **English submission draft**: Summary / Strengths / Weaknesses / Questions / Justification, each in short/medium/long, editable and ready to paste into OpenReview
-- 🔁 **Revision loop**: issue board, impact/cost ranking, verification that each fix appears in the new version, and a response letter
+- 📌 **Verifiable evidence**: quotes come only from PDF snapshots, checked by text and page; numbers are recomputed by script
+- 🧩 **Parallel novelty search**: one sub-agent per contribution searches and reads prior work; anything after the cutoff does not count
+- 🛡️ **Counter-evidence & independent critic**: each criticism first states the authors' best defence, false issues are withdrawn, then a fresh critic re-checks every comment
+- 🎯 **Scored by core claims**: the score follows whether the core claims hold, not how many issues were found
+- ⚖️ **Neutral & tamper-evident**: user stances are recorded, never obeyed; rule files are fingerprinted
+
+Delivers a Chinese review, a PDF reader with comments on the original sentences, and an English submission draft.
 
 ### Why not just ask an LLM?
 
