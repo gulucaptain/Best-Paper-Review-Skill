@@ -4,7 +4,8 @@
 
 **An AI paper-review skill whose every comment can be checked, critiqued, and is immune to the user's preferred verdict**
 
-🧪 Page-anchored evidence for every comment, parallel prior-work search per contribution, and an independent critic sub-agent. One skill for both Claude and Codex.
+📌 Page-anchored evidence · 🧩 Parallel novelty search per contribution · 🧑‍⚖️ Independent critic<br>
+One skill for both Claude and Codex
 
 ![version](https://img.shields.io/badge/version-v1.5.1-6D4EE0) ![tests](https://img.shields.io/badge/unit%20tests-78%20passed-brightgreen) ![venues](https://img.shields.io/badge/CCF--A%20venues-95-orange) ![Claude](https://img.shields.io/badge/Claude-Skill-8A63D2) ![Codex](https://img.shields.io/badge/Codex-Skill-10A37F) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
