@@ -145,22 +145,17 @@ Best-Paper-Review-Skill/
 - 有利益冲突（如竞争对手的论文）时，请声明或回避；Skill 不会为此生成可提交的意见与评分。
 - 审稿结论需要你亲自核对。它是助手，不是审稿人。
 
-## 🚧 已知局限
-
-- 扫描版 PDF 需先 OCR；跨栏长引文的区域框可能偏大。
-- 除 ICML 2026 外，会议表单为近年常见形式，使用前请核对当年审稿指南。
-- Semantic Scholar / OpenAlex 无 API Key 时容易限流，可设置 `SEMANTIC_SCHOLAR_API_KEY`、`OPENALEX_API_KEY`。
-- 审稿内容默认用简体中文撰写，英文提交稿另行生成。
-
 ## 📄 版权与许可
 
 - 代码与文档采用 [MIT](LICENSE)。PDF.js（Apache-2.0）、pdf-lib（MIT）、KaTeX（MIT）保留各自许可。
 - 本仓库**不含第三方论文的 PDF 或全文**：`examples/demo/` 中是自行生成的合成论文。
-- 
 
-## 🔗 姊妹项目
+## 🏆 Best-Paper 系列
 
-- [Best-Paper-Writing-Skill](https://github.com/gulucaptain/Best-Paper-Writing-Skill)：从 60 篇获奖论文提炼写作规律，生成论文底稿。写完用它，审稿用本项目。
+| | 项目 | 用途 |
+|---|---|---|
+| ✍️ | [Best-Paper-Writing-Skill](https://github.com/gulucaptain/Best-Paper-Writing-Skill) | 写论文：生成最佳论文风格的论文底稿 |
+| 🔍 | **Best-Paper-Review-Skill**（本项目） | 审论文：可校验、可复核的审稿意见 |
 
 ## 🤝 参与
 

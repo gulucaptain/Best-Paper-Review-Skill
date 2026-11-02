@@ -108,9 +108,12 @@ Compare with `provenance.rules_sha256` in any `review.json` (`python3 scripts/in
 
 Code and docs: [MIT](LICENSE). PDF.js (Apache-2.0), pdf-lib (MIT) and KaTeX (MIT) keep their licences. The repo **contains no third-party paper PDFs or full texts**: `examples/demo/` is a synthetic paper.
 
-## 🔗 Sister project
+## 🏆 The Best-Paper series
 
-[Best-Paper-Writing-Skill](https://github.com/gulucaptain/Best-Paper-Writing-Skill): drafts papers in the style of 60 award-winning papers. Write with that one, review with this one.
+| | Project | Purpose |
+|---|---|---|
+| ✍️ | [Best-Paper-Writing-Skill](https://github.com/gulucaptain/Best-Paper-Writing-Skill) | Write: best-paper-style drafts |
+| 🔍 | **Best-Paper-Review-Skill** (this repo) | Review: verifiable, cross-checked reviews |
 
 ## 🤝 Contributing
 
