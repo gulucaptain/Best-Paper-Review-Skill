@@ -7,7 +7,7 @@
 📌 每条意见都有原文页码证据 · 🧩 逐条贡献并行查新 · 🧑‍⚖️ 独立子代理复核<br>
 一个 Skill，同时支持 Claude 与 Codex
 
-[![project page](https://img.shields.io/badge/Project%20Page-online-6D4EE0?logo=googlechrome&logoColor=white)](https://gulucaptain.github.io/Best-Paper-Review-Skill/) ![version](https://img.shields.io/badge/version-v1.5.1-6D4EE0) ![tests](https://img.shields.io/badge/unit%20tests-78%20passed-brightgreen) ![venues](https://img.shields.io/badge/CCF--A%20venues-95-orange) ![Claude](https://img.shields.io/badge/Claude-Skill-8A63D2) ![Codex](https://img.shields.io/badge/Codex-Skill-10A37F) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+[![project page](https://img.shields.io/badge/Project%20Page-online-6D4EE0?logo=googlechrome&logoColor=white)](https://gulucaptain.github.io/Best-Paper-Review-Skill/) ![version](https://img.shields.io/badge/version-v1.5.1-6D4EE0) ![Claude](https://img.shields.io/badge/Claude-Skill-8A63D2) ![Codex](https://img.shields.io/badge/Codex-Skill-10A37F) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
 [🌐 项目主页](https://gulucaptain.github.io/Best-Paper-Review-Skill/) · [中文](README.md) · [English](README_en.md) · [更新日志](CHANGELOG.md)
 
