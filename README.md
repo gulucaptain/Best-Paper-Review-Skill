@@ -53,14 +53,6 @@
 
 > 用 best-paper-review 审这篇论文：`paper.pdf`
 
-| 模式 | 适用 | 交付 |
-|---|---|---|
-| `quick` 快速预审 | 半小时内判断大方向 | `review.md` |
-| `full` 完整审稿（默认） | 想看审稿人会怎么说 | 英文提交稿页面 + PDF 阅读器 + 源数据 |
-| `self` 投稿前自查 | 作者本人，想知道怎么改 | 同上，另附被拒风险排序与修改方案 |
-| `rebuttal` 答辩评估 | 已有评审与作者回复 | 逐条 已解决 / 部分解决 / 未解决 |
-| `revise` 修改闭环 | 收到审稿意见后修改论文 | 问题看板、修改核验、回复信 |
-
 ### 📦 输出目录
 
 ```
@@ -111,7 +103,7 @@ Best-Paper-Review-Skill/
 ├── assets/logo-violet.svg
 ├── install.sh                 # 一键安装
 └── skills/best-paper-review/
-    ├── SKILL.md               # 入口：不可协商的规则、五种模式、十一步流程
+    ├── SKILL.md               # 入口：不可协商的规则与审稿流程
     ├── references/            # 必查清单、论文类型、创新性与多代理协议、反证、标定与写作、
     │                          # 中立性、伦理、复核、修改闭环、英文提交稿、会议、schema、阅读器
     ├── scripts/               # init_review · extract_pdf · find_quote · sources · fetch_arxiv · verify_dates

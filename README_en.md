@@ -49,14 +49,6 @@ The host model makes the scientific judgements; scripts handle extraction, retri
 
 > Use best-paper-review to review `paper.pdf`
 
-| Mode | When | Output |
-|---|---|---|
-| `quick` | a 30-minute sanity check | `review.md` |
-| `full` (default) | what would reviewers say? | English submission page + PDF reader + source data |
-| `self` | authors before submission | same, plus rejection-risk ranking and fix plan |
-| `rebuttal` | reviews + author response exist | resolved / partly / unresolved per point |
-| `revise` | revising after reviews | issue board, fix verification, response letter |
-
 Review text is written in Simplified Chinese by default; the English submission draft is generated separately.
 
 ---
