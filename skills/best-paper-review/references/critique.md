@@ -28,7 +28,7 @@ python3 scripts/evidence.py WORK/review.json --strict                   # 未回
 1. **误读**（`misread`）：重读意见引用的页面与上下文，论文是否真的这么说？数字、符号、方向是否抄对？
 2. **论文已回应**（`already_addressed`）：全文与附录是否已经回答了这条批评？
 3. **证据不足**（`unsupported`）：引文能否支撑结论？是否把“未报告”当成“没做”？
-4. **轻重不当**（`severity`）：major/minor、confirmed/limitation 的定级是否与影响相符？见 calibration.md。
+4. **轻重不当**（`severity`）：major/minor、confirmed/limitation 与 `tier`（A/B/C）的定级是否与影响相符？两个方向都要查：偏重——查实的笔误、措辞夸大是否被标成 A/B（G2），多条 C 是否被叠加成核心缺陷（G8），“说过头”是否被误判为“不成立”；偏轻——推翻核心结论的问题是否被标成 B/C，`overall.core_claims` 的改写是否超出证据能支持的范围，证据链已被切断时是否仍判“成立”；切断与收窄是否分对（缺基线、缺消融通常是收窄，不应据此判“不成立”；在公平条件下增益消失才是切断）；分数是否落在判定对应的 G7 范围内。见 calibration.md“评分底线条例”。
 5. **表述空泛或语气不当**（`vague`、`tone`）：是否给出了具体位置与可执行请求？是否有贬低作者的措辞？
 6. **重复**（`duplicate`）：多条意见是否在说同一件事？
 

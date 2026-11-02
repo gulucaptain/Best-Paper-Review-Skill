@@ -733,5 +733,83 @@ class TestViewerPages(Base):
         self.assertIn('id="btnRegion"', (self.tmp / "e.html").read_text(encoding="utf-8"))
 
 
+class TestFocusV15(unittest.TestCase):
+    """v1.5: weaknesses ordered by impact on core claims; tier C merged."""
+
+    def setUp(self):
+        import submission
+        self.sub = submission
+        self.review = {"comments": [
+            {"id": "W01", "status": "confirmed", "severity": "major", "tier": "C"},
+            {"id": "W02", "status": "confirmed", "severity": "major", "tier": "B"},
+            {"id": "W03", "status": "limitation", "severity": "minor", "tier": "C"},
+            {"id": "W04", "status": "confirmed", "severity": "minor", "tier": "B"}],
+            "overall": {"core_claims": [{"claim": "x", "verdict": "partly", "impacts": {"W04": "cut", "W02": "narrow"}}]}}
+
+    def test_rank(self):
+        fr = self.sub.focus_rank(self.review)
+        self.assertEqual(fr, {"W01": 3, "W02": 1, "W03": 3, "W04": 0})
+        self.assertEqual(self.sub.focus_rank({"comments": [{"id": "W01", "status": "confirmed"}]}), {})
+
+    def test_skeleton_order(self):
+        sk = self.sub.skeleton(self.review)
+        self.assertEqual([w["from"][0] for w in sk["weaknesses"]][:2], ["W04", "W02"])
+
+    def test_check_warns(self):
+        sub = {"weaknesses": [{"id": "W1", "from": ["W01"]}, {"id": "W2", "from": ["W03"]},
+                              {"id": "W3", "from": ["W04"]}, {"id": "W4", "from": ["W02"]}]}
+        res = self.sub.check(sub, self.review)
+        msgs = " | ".join(res["warnings"])
+        self.assertIn("v1.5 focus", msgs)
+        self.assertIn("merge them into one item", msgs)
+
+
+class TestScoreRangeV151(Base):
+    """v1.5.1: score range follows core-claim verdicts only (calibration.md G7)."""
+
+    def setUp(self):
+        super().setUp()
+        from evidence import score_range_check
+        self.f = score_range_check
+        self.ids = {"A1": {"tier": "A"}, "B1": {"tier": "B"}, "C1": {"tier": "C"}}
+
+    def w(self, claims, score, sig="medium"):
+        return " | ".join(self.f(claims, self.ids, score, sig))
+
+    def test_missing_baseline_is_not_capped_at_3(self):
+        cc = [{"verdict": "holds", "impacts": {"B1": "narrow"}}]
+        self.assertEqual(self.w(cc, 4), "")          # v1.5 G7 would have capped this at 3
+        self.assertEqual(self.w(cc, 3), "")
+        self.assertIn("outside 3-4", self.w(cc, 5, "high"))
+
+    def test_bands(self):
+        self.assertIn("outside 1-2", self.w([{"verdict": "fails", "impacts": {"A1": "cut"}}], 3))
+        self.assertEqual(self.w([{"verdict": "partly", "impacts": {"B1": "cut"}}], 3), "")
+        self.assertIn("outside 2-3", self.w([{"verdict": "partly", "impacts": {}}], 4))
+        self.assertEqual(self.w([{"verdict": "holds", "impacts": {"C1": "none"}}], 4), "")
+        self.assertIn("needs significance high", self.w([{"verdict": "holds", "impacts": {}}], 5))
+        self.assertEqual(self.w([{"verdict": "holds", "impacts": {}}], 6, "high"), "")
+
+    def test_low_significance_extends_floor(self):
+        self.assertEqual(self.w([{"verdict": "holds", "impacts": {}}], 3, "low"), "")
+        self.assertIn("outside", self.w([{"verdict": "holds", "impacts": {}}], 3, "medium"))
+
+    def test_contradictions(self):
+        self.assertIn("tier C", self.w([{"verdict": "partly", "impacts": {"C1": "cut"}}], 3))
+        self.assertIn("tier A", self.w([{"verdict": "fails", "impacts": {"A1": "narrow"}}], 2))
+        self.assertIn("verdict holds although", self.w([{"verdict": "holds", "impacts": {"B1": "cut"}}], 4))
+        self.assertIn("should be fails", self.w([{"verdict": "partly", "impacts": {"A1": "cut"}}], 3))
+
+    def test_validate_reports_range_as_nonstrict_warning(self):
+        self.review.setdefault("policy", {})["mode"] = "full"
+        self.c("W01")["tier"] = "B"
+        self.review["overall"].update({"score": 5, "significance": "medium", "g13_check": "x",
+                                       "core_claims": [{"claim": "x", "verdict": "holds", "impacts": {"W01": "narrow"}}]})
+        r = self.check()
+        self.assertTrue(any("v1.5.1 G7" in w for w in r["warnings"]), r["warnings"])
+        self.review["overall"]["significance"] = "huge"
+        self.assertFalse(self.check()["valid"])
+
+
 if __name__ == "__main__":
     unittest.main()

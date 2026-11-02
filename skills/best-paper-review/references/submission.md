@@ -24,10 +24,11 @@ python3 scripts/finalize.py WORK --pdf paper.pdf --out reviews/                 
 
 - Strengths 默认推荐前 **3** 点，Weaknesses 默认推荐前 **6** 点（`recommend`），其余作为候选折叠在页面中，审稿人可一键加入。Questions 全部纳入。
 - 所有 major 的确认问题/证据局限必须出现在 Weaknesses 中，并且排在推荐范围内。
+- **聚焦（v1.5）**：Weaknesses 按对核心主张的影响排序——先写切断证据链的（`core_claims.impacts` 为 `cut`，或 `tier` 为 A），再写收窄主张的（`narrow`，或 `tier` 为 B），最后写其他问题。`tier` 为 C 的写作与呈现问题（措辞夸大、不影响结论的数字或表格笔误、细节缺失）合并为一条 “Presentation and consistency”，放在最后，不单独占用推荐位；只有一条 C 时可单独列出。
 - Weakness 一段的结构：问题是什么 → 证据在哪里（Table/Figure/Section/Eq.）→ 为什么影响论文的结论 → 作者可以怎样解决。
 - Question 以问句结束，问的是答案会改变评估的内容，不问论文里已经写明的事。
 
-**Justification**：一段话，说明评分由哪几条决定性的优点与不足决定，以及什么证据会让分数上调或下调。与 `overall.justification` 和 `decisive_ids` 一致。
+**Justification**：一段话，先指出最弱的一环——哪条核心主张、哪段证据链最可疑或已被切断（没有则明说核心主张都有支撑）——再说明评分由哪几条决定性的优点与不足决定，以及什么证据会让分数上调或下调。与 `overall.justification` 和 `decisive_ids` 一致。
 
 **评分**：`scores.rating`、`scores.confidence` 与各子分的数字必须等于 `review.json` 的 `overall`；标签用目标会议当年表单的英文原文（形如 `6: marginally above the acceptance threshold`）。标签未核实时，在 `venue_note` 中说明。有 `ethics_flag` 的意见时，`scores.ethics` 写明需要伦理审查的理由。
 

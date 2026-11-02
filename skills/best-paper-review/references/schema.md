@@ -15,7 +15,7 @@
 | `review_date` | ISO 日期 | |
 | `policy` | object | `blind`（是否未看过他人评审）、`read_scope`（实际读了什么）、`not_done`（未做的事列表）、`searches`（检索记录摘要）、`withdrawn`（撤销/降级的候选批评：`[{candidate, action, reason}]`）、`prompt_injection`（发现的注入文字摘要）、`user_stance`（使用者表态：`{kind: [none/outcome/score/relationship/selective/pressure], summary, handling}`，必填）、`neutrality`（`{symmetry_check, briefs_checked}`，完整/自查模式出分时必填），见 neutrality.md；`submission_skipped`（不写英文提交稿的原因，字符串；完整/自查模式缺少 `submission_en.json` 时必填） |
 | `summary` | object | `one_line`、`problem`、`method`、`setup`、`contributions`（列表，见下） |
-| `overall` | object | `recommendation`（中文标签）、`score`、`confidence`（1–5）、`subscores`（如 `{"soundness":3}`）、`justification`、`decisive_ids`（决定评分的意见编号）、`would_change`（什么情况下评分会变） |
+| `overall` | object | `recommendation`（中文标签）、`score`、`confidence`（1–5）、`subscores`（如 `{"soundness":3}`）、`justification`、`decisive_ids`（决定评分的意见编号）、`would_change`（什么情况下评分会变）；v1.5 新增：`core_claims`（`[{claim, quote, page, type, evidence_chain, impacts: {意见编号: cut/narrow/none}, restated, verdict: holds/partly/fails}]`，最多 3 条）、`significance`（high/medium/low）、`blocking_issue`（score=3 时必填；v1.5.1 起也可写“贡献重要性不足”及理由）、`g13_check`（反向校验一句话）。分数统一用 1–6 量表；v1.5.1 起分数范围只由 `core_claims` 判定决定（calibration.md G7），`evidence.py` 检查分数是否在范围内、`impacts` 与 `verdict`/`tier` 是否自相矛盾 |
 | `dimensions` | object | 九个维度键 → `{status, comment_ids, note}` |
 | `sources` | list | 见下 |
 | `comments` | list | 见下 |
@@ -54,6 +54,7 @@
 | `dimension` | 九维度键之一 |
 | `status` | `strength` 优点 / `confirmed` 确认问题 / `limitation` 证据局限 / `question` 澄清问题 / `suggestion` 改进建议 |
 | `severity` | `major` / `minor`（`strength` 可省略） |
+| `tier` | v1.5：`A` 致命 / `B` 实质 / `C` 可修改（`strength` 省略），定义见 calibration.md G1–G5；与 `severity`、`confidence` 分开判断 |
 | `confidence` | `high` / `medium` / `low` |
 | `scope` | `global` / `page` / `region`；后两者需 `page`（从 1 开始） |
 | `rect` | region 用，`[x, y, w, h]`，相对未旋转页面归一化到 0–1 |

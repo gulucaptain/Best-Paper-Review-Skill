@@ -6,7 +6,7 @@
 
 🧪 每条意见都有原文页码证据，逐条贡献并行检索前作，独立子代理复核审稿意见；一个 Skill 同时支持 Claude 与 Codex
 
-![version](https://img.shields.io/badge/version-v1.4.0-blue) ![tests](https://img.shields.io/badge/unit%20tests-70%20passed-brightgreen) ![venues](https://img.shields.io/badge/CCF--A%20venues-95-orange) ![Claude](https://img.shields.io/badge/Claude-Skill-8A63D2) ![Codex](https://img.shields.io/badge/Codex-Skill-10A37F) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+![version](https://img.shields.io/badge/version-v1.5.1-blue) ![tests](https://img.shields.io/badge/unit%20tests-78%20passed-brightgreen) ![venues](https://img.shields.io/badge/CCF--A%20venues-95-orange) ![Claude](https://img.shields.io/badge/Claude-Skill-8A63D2) ![Codex](https://img.shields.io/badge/Codex-Skill-10A37F) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
 [中文](README.md) · [English](README_en.md) · [更新日志](CHANGELOG.md)
 
@@ -23,6 +23,7 @@
 - 📌 **可校验的证据**：引文只能来自脚本生成的快照，校验**所在页码**；前作日期从 arXiv 版本历史或 Crossref 核对；数值批评由脚本复算
 - 🛡️ **反证检查**：每条批评先写出作者最有力的辩护，再判断证据能否消解；撤销的候选单独列出，“未报告”不等于“没做”
 - 🧑‍⚖️ **独立复核**：审稿写完后，一个新上下文的复核子代理逐条重读原文核对意见，每条复核意见都要处理后才能通过校验
+- 🎯 **按核心主张出分**：先找出最多 3 条核心主张，判断每个问题是切断还是收窄其证据链，把主张改写为证据能支持的最强版本，再由“成立 / 部分成立 / 不成立”决定 1–6 分的范围；问题多少不决定分数，“说过头”不等于“不成立”
 - ⚖️ **中立性**：使用者说“希望被拒”“给 2 分”“这是竞争对手的论文”，都只记录、不执行；出分前做对称自检；规则文件有指纹，被改动的规则可被发现
 - 📖 **PDF 阅读器**：意见高亮在 PDF 原句上，页边编号标记、缩略图、论文速览、KaTeX 公式，单个 HTML 离线打开
 - ✍️ **英文提交稿**：Summary / Strengths / Weaknesses / Questions / Justification，每项三个详略版本，可编辑、一键复制到 OpenReview
@@ -101,7 +102,7 @@ cd Best-Paper-Review-Skill
 cd skills/best-paper-review
 python3 scripts/package_viewer.py examples/demo/paper.pdf examples/demo/review.json /tmp/demo-viewer.html
 python3 scripts/serve.py --demo                 # 可编辑的批注查看器 http://127.0.0.1:8768
-python3 -B -m unittest discover -s tests -v     # 70 个离线单元测试
+python3 -B -m unittest discover -s tests -v     # 78 个离线单元测试
 ```
 
 ---
@@ -130,7 +131,7 @@ Best-Paper-Review-Skill/
 
 ## 📊 验证
 
-- **单元测试** 70/70 通过；浏览器回归覆盖服务模式、单文件离线模式、框选、编辑校验、撤销、保存与导出。
+- **单元测试** 78/78 通过；浏览器回归覆盖服务模式、单文件离线模式、框选、编辑校验、撤销、保存与导出。
 - **盲测**：一个没见过标准答案的新代理按 Skill 审合成论文，6 个植入缺陷全部检出（含提示注入），5 个“伪问题”都正确撤销。
 - **VGGT 复审**：4 个子代理并行检索四个贡献，读了 9 篇截止日前的前作（日期全部经 arXiv 核对），`evidence.py --strict` 通过。
 
@@ -145,6 +146,8 @@ Best-Paper-Review-Skill/
 | v1.2.0 | `cb39682d14a0c33dbf841303fd0cda07c6bf1601da8725c1d26b0436b0b1ddbd` |
 | v1.3.0 | `e7eb73011829dddc10a889b1549b9fde1ac5853e6d4f78364062b550ad73a848` |
 | v1.4.0 | `3142cfa93dfc012eb8626e8ca705f73f44b632048c193e6cef779112e8b57217` |
+| v1.5.0 | `02e56ae42041e2fb5d3752f3b86ac0d3ce1dda796a4203679bcce14b8065a4e5` |
+| v1.5.1 | `a4465b789e4e8c9fe16abbffed2b93144422283d5dec31a8ea50748c7aaead5b` |
 
 ---
 

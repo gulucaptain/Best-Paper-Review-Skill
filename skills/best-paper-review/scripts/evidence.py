@@ -109,6 +109,51 @@ def safe_eval(expr: str) -> float:
 
 
 # ------------------------------------------------------------------ validator
+
+def score_range_check(core_claims, ids, score, significance, six_point=True):
+    """v1.5.1 (calibration.md G7): the score range follows the core-claim verdicts only.
+
+    Returns warning strings: impacts that contradict verdict/tier, and a score outside the range.
+    """
+    out = []
+    verdicts = []
+    core_b_narrow = False
+    for i, x in enumerate(core_claims):
+        v = x.get("verdict")
+        if v not in ("holds", "partly", "fails"):
+            return out
+        verdicts.append(v)
+        for k, imp in (x.get("impacts") or {}).items():
+            tier = (ids.get(k) or {}).get("tier")
+            if imp == "cut" and tier == "C":
+                out.append(f"v1.5.1: core_claims[{i}].impacts[{k}] is cut but {k} is tier C (C cannot cut an evidence chain)")
+            if imp == "narrow" and tier == "A":
+                out.append(f"v1.5.1: core_claims[{i}].impacts[{k}] is narrow but {k} is tier A (A on a core claim cuts; re-tier or re-judge)")
+            if imp == "cut" and v == "holds":
+                out.append(f"v1.5.1: core_claims[{i}] verdict holds although {k} cuts its evidence chain")
+            if imp == "cut" and tier == "A" and v != "fails":
+                out.append(f"v1.5.1: core_claims[{i}] has tier-A cut {k}; verdict should be fails")
+            if imp == "narrow" and tier == "B":
+                core_b_narrow = True
+    if not verdicts or not six_point or not isinstance(score, int):
+        return out
+    if "fails" in verdicts:
+        lo, hi, band = 1, 2, "a core claim fails"
+    elif "partly" in verdicts:
+        lo, hi, band = 2, 3, "a core claim partly holds"
+    elif core_b_narrow:
+        lo, hi, band = 3, 4, "all core claims hold, a narrowing B issue remains"
+    else:
+        lo, hi, band = 4, 6, "all core claims hold, no B issue on the core"
+        if score >= 5 and significance != "high":
+            out.append(f"v1.5.1 G7: score {score} needs significance high")
+    if significance == "low":
+        lo -= 1
+    if not lo <= score <= hi:
+        out.append(f"v1.5.1 G7: score {score} outside {lo}-{hi} ({band}); re-check the verdicts rather than the score")
+    return out
+
+
 def validate(data, base: Path, strict: bool = False, venues_path: Path | None = None) -> dict:
     errors: list[str] = []
     warnings: list[str] = []
@@ -289,6 +334,8 @@ def validate(data, base: Path, strict: bool = False, venues_path: Path | None = 
             E(f"{cid}: invalid dimension {dim!r}")
         if st != "strength" and c.get("severity") not in SEVERITIES:
             E(f"{cid}: severity must be major/minor")
+        if st != "strength" and c.get("tier") is not None and c.get("tier") not in ("A", "B", "C"):
+            E(f"{cid}: tier must be A/B/C (calibration.md G1)")
         if c.get("confidence") not in (None, *CONFIDENCES):
             E(f"{cid}: invalid confidence")
         if not c.get("title") or not c.get("body"):
@@ -426,6 +473,33 @@ def validate(data, base: Path, strict: bool = False, venues_path: Path | None = 
                     E(f"overall.decisive_ids: unknown comment {cid}")
             if not ov.get("decisive_ids"):
                 W("overall.decisive_ids empty: say which comments decide the recommendation")
+            # v1.5 scoring rules (calibration.md G1-G13); warnings only while the rules are being validated
+            if mode in ("full", "self"):
+                untiered = [c.get("id") for c in comments if c.get("status") != "strength" and not c.get("tier")]
+                if untiered:
+                    W(f"v1.5: {len(untiered)} comments have no tier (A/B/C), e.g. {untiered[:3]}")
+                cc = ov.get("core_claims")
+                if not cc:
+                    W("v1.5: overall.core_claims missing (core-contribution verdicts, calibration.md G6)")
+                else:
+                    for i, x in enumerate(cc if isinstance(cc, list) else []):
+                        if x.get("verdict") not in ("holds", "partly", "fails"):
+                            E(f"overall.core_claims[{i}].verdict must be holds/partly/fails")
+                        for k, v in (x.get("impacts") or {}).items():
+                            if k not in ids:
+                                E(f"overall.core_claims[{i}].impacts: unknown comment {k}")
+                            elif v not in ("cut", "narrow", "none"):
+                                E(f"overall.core_claims[{i}].impacts[{k}] must be cut/narrow/none")
+                    if isinstance(cc, list):
+                        for w in score_range_check(cc, ids, ov.get("score"), ov.get("significance"),
+                                                   bool(form and [x[0] for x in form["overall_scale"]] == [1, 2, 3, 4, 5, 6])):
+                            W(w)
+                if ov.get("significance") is not None and ov.get("significance") not in ("high", "medium", "low"):
+                    E("overall.significance must be high/medium/low")
+                if ov.get("score") == 3 and form and [x[0] for x in form["overall_scale"]] == [1, 2, 3, 4, 5, 6] and not str(ov.get("blocking_issue", "")).strip():
+                    W("v1.5 G9: score 3 needs overall.blocking_issue (the issue that blocks acceptance, or why significance is too low); otherwise give 4")
+                if not str(ov.get("g13_check", "")).strip():
+                    W("v1.5 G13: overall.g13_check missing")
 
     # ---------------- novelty table
     for n in data.get("novelty", []) or []:
@@ -531,7 +605,8 @@ def validate(data, base: Path, strict: bool = False, venues_path: Path | None = 
 
     if strict:
         exempt = ("prompt-injection", "not verified for this year", "declared manually", "no independent critic",
-                  "review was started under rules", "words (expected", "not ordered by length", "(default ")
+                  "review was started under rules", "words (expected", "not ordered by length", "(default ",
+                  "v1.5")
         errors += [f"[strict] {w}" for w in warnings if not any(x in w for x in exempt)]
     stats = {
         "comments": len(ids),

@@ -601,8 +601,8 @@
     "critic": null
   },
   "provenance": {
-    "skill_version": "1.4.0",
-    "rules_sha256": "3142cfa93dfc012eb8626e8ca705f73f44b632048c193e6cef779112e8b57217",
+    "skill_version": "1.5.1",
+    "rules_sha256": "a4465b789e4e8c9fe16abbffed2b93144422283d5dec31a8ea50748c7aaead5b",
     "rules_official": true
   }
 }

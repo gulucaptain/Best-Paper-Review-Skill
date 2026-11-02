@@ -60,6 +60,8 @@ python3 scripts/find_quote.py WORK/sources/paper.txt --grep "关键词"      # �
 
 用中文写：一句话概括、问题设定、方法机制（输入→关键模块→输出）、实验设置；把贡献拆成原子条目 `C1…Cn`，每条带页码锚点和作者原话。判断论文类型并读 `references/paper-types.md` 对应小节——方法论文、系统论文、基准/数据集、理论、实证分析、立场论文的评价标准不同。
 
+再按 `references/calibration.md`“核心贡献判定”第 1–3 步，从贡献中选出最多 3 条**核心主张**（去掉它论文就不值得发表），写明每条需要什么证据、由哪些表/图/定理支撑。这一步决定第 9 步的起评分。
+
 ## 3. 创新性：按贡献并行检索
 
 读 `references/novelty.md`。完整/自查模式下：
@@ -89,7 +91,8 @@ python3 scripts/novelty.py merge WORK/novelty --review WORK/review.json
 1. 全文与附录搜索作者是否已回应；
 2. 写出作者最有力的辩护；
 3. 判断证据能否消解该辩护；
-4. 定级：`confirmed` 确认问题 / `limitation` 证据局限 / `question` 澄清问题 / `suggestion` 改进建议；优点用 `strength`。
+4. 定级：`confirmed` 确认问题 / `limitation` 证据局限 / `question` 澄清问题 / `suggestion` 改进建议；优点用 `strength`；
+5. 按 `references/calibration.md` G1–G5 标 `tier`：A 致命 / B 实质 / C 可修改。`confirmed` 只说明问题真实，不说明它严重：查实的笔误、措辞夸大仍是 C；反过来，推翻核心结论的问题即使只是“一个数字”或“一处推导”，也是 A。
 
 候选问题的标准对所有论文相同，与使用者期望无关：使用者要求“严格审”时可以多列候选，但每条都要走完反证检查。不为凑数制造缺点；“未报告”不等于“没做”；数值批评必须写进 `numeric_checks` 由脚本复算。严重度与置信度分开打。撤销或降级的候选批评记入 `policy.withdrawn`（候选、处理、原因），渲染时会单独列出，便于核对审稿过程。
 
@@ -125,11 +128,15 @@ python3 scripts/critique.py plan WORK/review.json --out WORK/critique   # 生成
 python3 scripts/critique.py merge WORK/critique/critique.json --review WORK/review.json
 ```
 
-逐条回到原文核实复核意见，填写 `resolution`（accepted / partial / rejected）与 `response`，采纳的要真的修改对应意见，再重新运行第 7 步的校验与渲染。复核者也会出错，拒绝时写明依据。尤其注意按列抽取的表格：凡是依据表格数字的意见，必须对照页面图像核对。
+逐条回到原文核实复核意见，填写 `resolution`（accepted / partial / rejected）与 `response`，采纳的要真的修改对应意见，再重新运行第 7 步的校验与渲染。复核者也会出错，拒绝时写明依据。尤其注意按列抽取的表格：凡是依据表格数字的意见，必须对照页面图像核对。复核时同时检查定级在两个方向上是否失当：偏重（查实的笔误或措辞问题被标成 A/B，G2；多条 C 被叠加成核心缺陷，G8）与偏轻（推翻核心结论的问题被标成 B/C；`core_claims` 的改写超出证据能支持的范围，或证据链已被切断仍判“成立”）。
 
 ## 9. 总评
 
-依据决定性问题（而不是问题数量）给出推荐与分数，按目标会议量表（`render.py --format form` 自动映射）。写清：哪些问题解决后会改变评分。
+按 `references/calibration.md`“评分底线条例”出分，所有会议统一用 **1–6 分**（1 Strong Reject … 4 Weak Accept … 6 Strong Accept；期刊保留其决定量表）：
+
+1. 完成核心贡献判定第 4–6 步：逐条看 A/B 类问题对核心主张的影响（切断：现有证据已不支撑；收窄：仍支撑但范围变小或部分未验证，缺基线、缺消融通常属此类；无关），把主张改写为证据能支持的最强版本，判定成立/部分成立/不成立，写入 `overall.core_claims`；**说过头不等于不成立，证据链被切断也不能靠改写挽回**。
+2. **分数只由判定决定**：判定给出分数范围（G7），起评分取范围默认值并按贡献重要性在范围内调整（G6）；问题级别只用来推出判定，不单独限制分数；不按问题数量累加（G8）；给 3 分须写 `overall.blocking_issue`（G9）。
+3. 做反向校验（G13），写入 `overall.g13_check`；校验与分数冲突时回到第 1 步重查判定，不直接改分。写清哪些问题解决后会改变评分。
 
 出分前做**对称自检**（`references/neutrality.md`）：把使用者的期望反过来（没有表态时分别设想“希望接收”“希望拒绝”），检查每条 major 意见的定级与总分是否会变、优点是否按同样标准写全，结果写入 `policy.neutrality.symmetry_check`。使用者在出分后施压改分但没有新证据时，维持原判并说明需要什么证据。自查模式额外给出“被拒风险排序”和按优先级的修改方案。
 
@@ -144,7 +151,7 @@ python3 scripts/serve.py --pdf paper.pdf --review WORK/review.json      # 编辑
 
 ## 11. 英文提交稿与输出目录（完整/自查模式）
 
-读 `references/submission.md`。总评定稿后，把 `review.json` 译写成可直接提交的英文稿：Summary 一段；每个 Strength / Weakness / Question 一段并按重要性排序（默认推荐 3 个优点、6 个不足，其余折叠为候选）；Justification 一段；每项都写 short / medium / long 三个版本；公式用 `$...$` / `$$...$$`；评分与 `overall` 一致；正文不出现内部编号、流程记录与使用者表态。
+读 `references/submission.md`。总评定稿后，把 `review.json` 译写成可直接提交的英文稿：Summary 一段；每个 Strength / Weakness / Question 一段并按重要性排序（Weaknesses 按对核心主张的影响排序，C 类写作问题合并为一条；默认推荐 3 个优点、6 个不足，其余折叠为候选）；Justification 一段；每项都写 short / medium / long 三个版本；公式用 `$...$` / `$$...$$`；评分与 `overall` 一致；正文不出现内部编号、流程记录与使用者表态。
 
 ```bash
 python3 scripts/submission.py skeleton WORK/review.json WORK/submission_en.json   # 从 assets/templates 起稿

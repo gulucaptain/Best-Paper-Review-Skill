@@ -145,11 +145,11 @@
     ],
     [
      3,
-     "弱拒绝 Weak reject"
+     "弱拒绝 Weak Reject"
     ],
     [
      4,
-     "弱接收 Weak accept"
+     "弱接收 Weak Accept"
     ],
     [
      5,
@@ -409,27 +409,27 @@
    "overall_scale": [
     [
      1,
-     "强烈拒绝 strong reject"
+     "强烈拒绝 Strong Reject"
     ],
     [
      2,
-     "拒绝 reject"
+     "拒绝 Reject"
+    ],
+    [
+     3,
+     "弱拒绝 Weak Reject"
     ],
     [
      4,
-     "略低于接收线 marginally below"
+     "弱接收 Weak Accept"
+    ],
+    [
+     5,
+     "接收 Accept"
     ],
     [
      6,
-     "略高于接收线 marginally above"
-    ],
-    [
-     8,
-     "接收 accept, good paper"
-    ],
-    [
-     10,
-     "强烈接收 strong accept"
+     "强烈接收 Strong Accept"
     ]
    ],
    "confidence_scale": [
@@ -530,23 +530,27 @@
    "overall_scale": [
     [
      1,
-     "不适合发表"
+     "强烈拒绝 Strong Reject"
     ],
     [
      2,
-     "需大幅修改"
+     "拒绝 Reject"
     ],
     [
      3,
-     "适合 Findings"
+     "弱拒绝 Weak Reject"
     ],
     [
      4,
-     "适合主会"
+     "弱接收 Weak Accept"
     ],
     [
      5,
-     "强烈推荐，可评奖"
+     "接收 Accept"
+    ],
+    [
+     6,
+     "强烈接收 Strong Accept"
     ]
    ],
    "confidence_scale": [
@@ -1516,5 +1520,6 @@
    "form": "generic_conference",
    "note": "CCF 第七版未收录"
   }
- }
+ },
+ "score_policy": "v1.5：除期刊外，所有会议表单统一使用 1–6 分量表（各会议每年细则不同，不再逐会议照搬原量表）。"
 }

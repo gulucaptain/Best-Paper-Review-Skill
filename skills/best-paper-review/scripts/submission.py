@@ -88,6 +88,27 @@ def _num(label) -> int | None:
     return int(m.group(1)) if m else None
 
 
+
+def focus_rank(review: dict | None) -> dict:
+    """v1.5 focus order per comment id: 0 cuts a core claim (or tier A), 1 narrows one (or tier B),
+    2 other untiered issue, 3 tier C (presentation). Empty when the review has no tier/core_claims."""
+    if not review:
+        return {}
+    comments = [c for c in review.get("comments") or [] if c.get("status") not in ("strength", "withdrawn")]
+    claims = (review.get("overall") or {}).get("core_claims") or []
+    if not claims and not any(c.get("tier") for c in comments):
+        return {}
+    impact: dict[str, str] = {}
+    for cl in claims if isinstance(claims, list) else []:
+        for k, v in (cl.get("impacts") or {}).items():
+            if v == "cut" or (v == "narrow" and impact.get(k) != "cut"):
+                impact[k] = v
+    out = {}
+    for c in comments:
+        cid, t, im = c.get("id"), c.get("tier"), impact.get(c.get("id"))
+        out[cid] = 0 if (im == "cut" or t == "A") else 1 if (im == "narrow" or t == "B") else 3 if t == "C" else 2
+    return out
+
 def check(sub: dict, review: dict | None = None, strict: bool = False) -> dict:
     errors: list[str] = []
     warnings: list[str] = []
@@ -209,13 +230,28 @@ def check(sub: dict, review: dict | None = None, strict: bool = False) -> dict:
                     E(f"major {cid} ({c.get('title', '')[:30]}) is not covered by any weakness")
                 elif covered[cid] >= n_w:
                     (E if strict else W)(f"major {cid} is outside the {n_w} recommended weaknesses; move it up")
+        fr = focus_rank(review)
+        if fr:
+            ranks = []
+            for it in sub.get("weaknesses") or []:
+                refs = [r for r in (it.get("from") or []) if r in fr]
+                ranks.append((it.get("id"), min(fr[r] for r in refs) if refs else 2))
+            for (pid, pr), (nid, nr) in zip(ranks, ranks[1:]):
+                if nr < pr:
+                    W(f"v1.5 focus: {nid} (focus {nr}) comes after {pid} (focus {pr}); order weaknesses by impact on core claims")
+            top = ranks[:n_w]
+            if any(r == 3 for _, r in top) and any(r < 3 for _, r in ranks[n_w:]):
+                W("v1.5 focus: a presentation-only (tier C) weakness is recommended while a core-impact weakness is folded")
+            c_only = [i for i, r in ranks if r == 3]
+            if len(c_only) > 1:
+                W(f"v1.5 focus: {len(c_only)} presentation-only weaknesses {c_only}; merge them into one item")
         flagged = any(c.get("ethics_flag") for c in comments.values())
         eth = str(scores.get("ethics", ""))
         if flagged and re.search(r"\bno\b", eth, re.I):
             W("a comment has ethics_flag but scores.ethics says no ethics review is needed")
 
     if strict:
-        errors += [f"[strict] {w}" for w in warnings]
+        errors += [f"[strict] {w}" for w in warnings if not w.startswith("v1.5")]
     return {"valid": not errors, "errors": errors, "warnings": warnings,
             "stats": {k: len(sub.get(k) or []) for k in LISTS}}
 
@@ -275,8 +311,9 @@ def skeleton(review: dict) -> dict:
                 **({"severity": c.get("severity")} if c.get("severity") else {}), **todo}
 
     st = [c for c in comments if c.get("status") == "strength"]
+    fr = focus_rank(review)
     wk = sorted([c for c in comments if c.get("status") in ("confirmed", "limitation", "suggestion")],
-                key=lambda c: rank.get(c.get("severity"), 2))
+                key=lambda c: (fr.get(c.get("id"), 2), rank.get(c.get("severity"), 2)))
     qs = [c for c in comments if c.get("status") == "question"]
     sk["strengths"] = [item(c, "S", i + 1) for i, c in enumerate(st)]
     sk["weaknesses"] = [item(c, "W", i + 1) for i, c in enumerate(wk)]
