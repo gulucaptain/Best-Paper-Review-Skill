@@ -243,7 +243,7 @@
     return !!rs;
   }
   function flash(d, rs, hex) {
-    rs.forEach((r) => { const e = document.createElement('div'); e.className = 'r flash'; e.style.cssText = `left:${r.x - 2}px;top:${r.y - 2}px;width:${r.w + 4}px;height:${r.h + 4}px;background:${hex || '#1f5f46'}55;pointer-events:none`; d.querySelector('.hl').appendChild(e); setTimeout(() => e.remove(), 1300); });
+    rs.forEach((r) => { const e = document.createElement('div'); e.className = 'r flash'; e.style.cssText = `left:${r.x - 2}px;top:${r.y - 2}px;width:${r.w + 4}px;height:${r.h + 4}px;background:${hex || '#6d4ee0'}55;pointer-events:none`; d.querySelector('.hl').appendChild(e); setTimeout(() => e.remove(), 1300); });
   }
   function trackCurrent() {
     const v = $('#viewer'); const mid = v.scrollTop + 140; let cur = 1;

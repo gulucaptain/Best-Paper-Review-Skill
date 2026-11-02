@@ -2,9 +2,9 @@
 :root{
   --bg:#f4f5f7; --canvas:#e8eaee; --surface:#ffffff; --surface-2:#f8f9fb; --line:#e4e7ec; --line-strong:#d0d5dd;
   --ink:#101828; --ink-2:#344054; --muted:#667085; --faint:#98a2b3;
-  --accent:#4f46e5; --accent-2:#eef0ff; --accent-ink:#3730a3;
+  --accent:#6d4ee0; --accent-2:#efeafe; --accent-ink:#4c32b8;
   --major:#e5484d; --major-bg:#fff0f0; --minor:#d97706; --minor-bg:#fff7e6;
-  --strength:#12a150; --strength-bg:#eaf8ef; --question:#8e4ec6; --question-bg:#f5edfc;
+  --strength:#12a150; --strength-bg:#eaf8ef; --question:#c0418c; --question-bg:#fbe9f3;
   --suggestion:#0b84d6; --suggestion-bg:#e8f4fd; --ok:#12a150; --bad:#e5484d;
   --radius:12px; --radius-sm:8px; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
   --shadow-lg:0 12px 32px rgba(16,24,40,.14),0 2px 6px rgba(16,24,40,.08);
@@ -15,9 +15,9 @@
 :root[data-theme="dark"]{
   --bg:#0f1115; --canvas:#16191f; --surface:#1b1f27; --surface-2:#222733; --line:#2b313d; --line-strong:#3a4150;
   --ink:#eef1f6; --ink-2:#cfd5df; --muted:#9aa3b2; --faint:#6b7483;
-  --accent:#8b8cff; --accent-2:#272a4a; --accent-ink:#c7c8ff;
+  --accent:#a993ff; --accent-2:#2a2350; --accent-ink:#d6ccff;
   --major:#ff6b6f; --major-bg:#3a1d20; --minor:#f5a524; --minor-bg:#3a2c12; --strength:#3ccf7a; --strength-bg:#143323;
-  --question:#c08cf0; --question-bg:#2d1f3d; --suggestion:#4fb3f6; --suggestion-bg:#132c3d;
+  --question:#f07fbf; --question-bg:#3a1a2e; --suggestion:#4fb3f6; --suggestion-bg:#132c3d;
   --shadow:0 1px 2px rgba(0,0,0,.4); --shadow-lg:0 16px 40px rgba(0,0,0,.5); color-scheme:dark;
 }
 *{box-sizing:border-box}

@@ -1,17 +1,17 @@
 :root{
-  --bg:#f4f5f2; --panel:#ffffff; --panel2:#f8f9f6; --line:#e3e6df; --line2:#eef0ea;
-  --ink:#1d2621; --ink2:#4b5650; --ink3:#87918b;
-  --brand:#1f5f46; --brand2:#2d7a5c; --brandSoft:#e6f1ec;
-  --major:#d1495b; --minor:#e0882b; --question:#7a5bd6; --suggestion:#2f80c2; --strength:#2a9d6f;
+  --bg:#f6f5f9; --panel:#ffffff; --panel2:#f9f8fc; --line:#e5e2ec; --line2:#efedf4;
+  --ink:#1d1b26; --ink2:#4f4b5e; --ink3:#8a8698;
+  --brand:#6d4ee0; --brand2:#7c5ff0; --brandSoft:#efeafe;
+  --major:#d1495b; --minor:#e0882b; --question:#c0418c; --suggestion:#2f80c2; --strength:#2a9d6f;
   --c-contrib:#2f6fdb; --c-exp:#0e9488; --c-method:#b5560f;
-  --page-shadow:0 1px 2px rgba(20,30,25,.08),0 6px 18px rgba(20,30,25,.06);
+  --page-shadow:0 1px 2px rgba(25,20,40,.08),0 6px 18px rgba(25,20,40,.06);
   --r:10px; --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --side-w:44vw;
 }
 :root.dark{
-  --bg:#141917; --panel:#1b211e; --panel2:#202723; --line:#2c3531; --line2:#252d29;
-  --ink:#e4ebe7; --ink2:#b3bdb7; --ink3:#7d8882; --brandSoft:#1f3a2f; --brand2:#5fbf95;
+  --bg:#121119; --panel:#1b1a24; --panel2:#201f2b; --line:#2c2a39; --line2:#252433;
+  --ink:#eeedf3; --ink2:#b6b3c4; --ink3:#86839a; --brandSoft:#2a2350; --brand2:#a993ff;
   --page-shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
@@ -69,7 +69,7 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke
 .page .pno{position:absolute;left:-34px;top:0;font-size:11px;color:var(--ink3)}
 .textLayer{position:absolute;inset:0;overflow:hidden;line-height:1;opacity:1}
 .textLayer span,.textLayer br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0 0}
-.textLayer ::selection{background:rgba(31,95,70,.28)}
+.textLayer ::selection{background:rgba(109,78,224,.25)}
 .hl{position:absolute;inset:0;pointer-events:none}
 .hl .r{position:absolute;border-radius:2px;mix-blend-mode:multiply;pointer-events:auto;cursor:pointer;transition:opacity .15s}
 :root.dark .hl .r{mix-blend-mode:normal;opacity:.45}
@@ -164,7 +164,7 @@ svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke
 .subs{display:flex;gap:8px;margin:6px 0 14px;flex-wrap:wrap}
 .subs span{font-size:12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:3px 9px}
 .dec{display:flex;flex-direction:column;gap:6px}
-.link{color:var(--brand);cursor:pointer;text-decoration:underline;text-decoration-color:rgba(31,95,70,.3);text-underline-offset:2px}
+.link{color:var(--brand);cursor:pointer;text-decoration:underline;text-decoration-color:rgba(109,78,224,.3);text-underline-offset:2px}
 :root.dark .link{color:var(--brand2)}
 .crit{padding:10px 16px 40px}
 .crit .it{padding:10px 4px;border-bottom:1px solid var(--line2)}
