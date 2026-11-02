@@ -1,6 +1,6 @@
 <div align="center">
 
-# <img src="assets/logo.svg" height="44" align="top" alt="logo"> Best-Paper-Review-Skill
+# <img src="assets/logo-violet.svg" height="44" align="top" alt="logo"> Best-Paper-Review-Skill
 
 **An AI paper-review skill whose every comment can be checked, critiqued, and is immune to the user's preferred verdict**
 

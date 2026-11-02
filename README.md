@@ -1,6 +1,6 @@
 <div align="center">
 
-# <img src="assets/logo.svg" height="44" align="top" alt="logo"> Best-Paper-Review-Skill
+# <img src="assets/logo-violet.svg" height="44" align="top" alt="logo"> Best-Paper-Review-Skill
 
 **可校验、可复核、不被预设结论左右的 AI 论文审稿 Skill**
 
@@ -112,7 +112,7 @@ python3 -B -m unittest discover -s tests -v     # 78 个离线单元测试
 ```
 Best-Paper-Review-Skill/
 ├── README.md / README_en.md / CHANGELOG.md / LICENSE
-├── assets/logo.svg
+├── assets/logo-violet.svg
 ├── install.sh                 # 一键安装
 └── skills/best-paper-review/
     ├── SKILL.md               # 入口：不可协商的规则、五种模式、十一步流程
