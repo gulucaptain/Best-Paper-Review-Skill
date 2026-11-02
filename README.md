@@ -6,7 +6,7 @@
 
 🧪 每条意见都有原文页码证据，逐条贡献并行检索前作，独立子代理复核审稿意见；一个 Skill 同时支持 Claude 与 Codex
 
-![version](https://img.shields.io/badge/version-v1.5.1-blue) ![tests](https://img.shields.io/badge/unit%20tests-78%20passed-brightgreen) ![venues](https://img.shields.io/badge/CCF--A%20venues-95-orange) ![Claude](https://img.shields.io/badge/Claude-Skill-8A63D2) ![Codex](https://img.shields.io/badge/Codex-Skill-10A37F) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+![version](https://img.shields.io/badge/version-v1.5.1-6D4EE0) ![tests](https://img.shields.io/badge/unit%20tests-78%20passed-brightgreen) ![venues](https://img.shields.io/badge/CCF--A%20venues-95-orange) ![Claude](https://img.shields.io/badge/Claude-Skill-8A63D2) ![Codex](https://img.shields.io/badge/Codex-Skill-10A37F) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
 [中文](README.md) · [English](README_en.md) · [更新日志](CHANGELOG.md)
 
