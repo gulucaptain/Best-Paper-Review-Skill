@@ -84,15 +84,9 @@ python3 -B -m unittest discover -s tests -v     # 78 offline unit tests
 
 ---
 
-## 📊 Validation
+## 🔏 Official rule fingerprints
 
-- 78/78 unit tests; browser regression for server mode, offline single-file mode, region drawing, edit validation, undo, save and export.
-- **Blind run**: a fresh agent without the answer key found all 6 planted flaws (including a prompt injection) and correctly withdrew all 5 planted false positives.
-- **VGGT re-review**: 4 parallel sub-agents, 9 pre-cutoff prior papers read (dates verified on arXiv), `evidence.py --strict` passes.
-
-> 🔬 These are smoke tests, not an evaluation on an expert-annotated corpus. We make **no claim** of higher review accuracy than other approaches.
-
-Official rule fingerprints (`python3 scripts/integrity.py fingerprint`), compare with `provenance.rules_sha256` in any `review.json`:
+Compare with `provenance.rules_sha256` in any `review.json` (`python3 scripts/integrity.py fingerprint`):
 
 | Version | Fingerprint |
 |---|---|
