@@ -49,8 +49,6 @@ The host model makes the scientific judgements; scripts handle extraction, retri
 
 > Use best-paper-review to review `paper.pdf`
 
-Optional: say which version to review (e.g. arXiv v1), or name a target venue to use its form; otherwise a generic form is used.
-
 | Mode | When | Output |
 |---|---|---|
 | `quick` | a 30-minute sanity check | `review.md` |
