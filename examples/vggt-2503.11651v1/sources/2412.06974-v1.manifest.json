@@ -1,0 +1,177 @@
+{
+  "manifest_version": 1,
+  "generated_by": "extract_pdf.py",
+  "tool": "pdftotext version 24.02.0",
+  "pdf_sha256": "72643e5a9884b76f221d0084380b6db0b1fcb46db7851c73ad90449026eaba62",
+  "pdf_name": "2412.06974-v1.pdf",
+  "pages": [
+    {
+      "page": 1,
+      "start": 0,
+      "end": 2538
+    },
+    {
+      "page": 2,
+      "start": 2540,
+      "end": 6376
+    },
+    {
+      "page": 3,
+      "start": 6378,
+      "end": 11218
+    },
+    {
+      "page": 4,
+      "start": 11220,
+      "end": 16264
+    },
+    {
+      "page": 5,
+      "start": 16266,
+      "end": 19547
+    },
+    {
+      "page": 6,
+      "start": 19549,
+      "end": 23528
+    },
+    {
+      "page": 7,
+      "start": 23530,
+      "end": 25131
+    },
+    {
+      "page": 8,
+      "start": 25133,
+      "end": 27483
+    },
+    {
+      "page": 9,
+      "start": 27485,
+      "end": 31649
+    },
+    {
+      "page": 10,
+      "start": 31651,
+      "end": 34062
+    },
+    {
+      "page": 11,
+      "start": 34064,
+      "end": 37655
+    },
+    {
+      "page": 12,
+      "start": 37657,
+      "end": 41042
+    },
+    {
+      "page": 13,
+      "start": 41044,
+      "end": 42329
+    },
+    {
+      "page": 14,
+      "start": 42331,
+      "end": 44970
+    },
+    {
+      "page": 15,
+      "start": 44972,
+      "end": 48445
+    },
+    {
+      "page": 16,
+      "start": 48447,
+      "end": 51957
+    },
+    {
+      "page": 17,
+      "start": 51959,
+      "end": 56152
+    },
+    {
+      "page": 18,
+      "start": 56154,
+      "end": 58939
+    },
+    {
+      "page": 19,
+      "start": 58941,
+      "end": 61839
+    },
+    {
+      "page": 20,
+      "start": 61841,
+      "end": 62300
+    },
+    {
+      "page": 21,
+      "start": 62302,
+      "end": 62394
+    },
+    {
+      "page": 22,
+      "start": 62396,
+      "end": 62549
+    },
+    {
+      "page": 23,
+      "start": 62551,
+      "end": 62645
+    },
+    {
+      "page": 24,
+      "start": 62647,
+      "end": 64669
+    },
+    {
+      "page": 25,
+      "start": 64671,
+      "end": 66466
+    },
+    {
+      "page": 26,
+      "start": 66468,
+      "end": 69148
+    },
+    {
+      "page": 27,
+      "start": 69150,
+      "end": 73029
+    },
+    {
+      "page": 28,
+      "start": 73031,
+      "end": 76906
+    },
+    {
+      "page": 29,
+      "start": 76908,
+      "end": 81019
+    },
+    {
+      "page": 30,
+      "start": 81021,
+      "end": 85001
+    },
+    {
+      "page": 31,
+      "start": 85003,
+      "end": 86057
+    }
+  ],
+  "page_count": 31,
+  "text_sha256": "91fe566c9727c1e4d516a0584c4d71fa42bb33c991dd910cc6dd881229f3d6a9",
+  "low_text_pages": [],
+  "injection_hits": [],
+  "created_at": "2026-10-31T08:05:22+00:00",
+  "url": "https://arxiv.org/abs/2412.06974v1",
+  "arxiv_id": "2412.06974",
+  "version": "v1",
+  "public_date": "2024-12-09",
+  "title": "MV-DUSt3R+: Single-Stage Scene Reconstruction from Sparse Views In 2 Seconds",
+  "all_versions": {
+    "v1": "2024-12-09"
+  }
+}

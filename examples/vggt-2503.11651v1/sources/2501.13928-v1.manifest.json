@@ -1,0 +1,103 @@
+{
+  "manifest_version": 1,
+  "generated_by": "extract_pdf.py",
+  "tool": "pdftotext version 24.02.0",
+  "pdf_sha256": "341087757076f9e9d5b87d27543d8b4ad5bc9d829f8ababdd01dc4cdd53c4ad7",
+  "pdf_name": "2501.13928-v1.pdf",
+  "pages": [
+    {
+      "page": 1,
+      "start": 0,
+      "end": 2546
+    },
+    {
+      "page": 2,
+      "start": 2548,
+      "end": 8191
+    },
+    {
+      "page": 3,
+      "start": 8193,
+      "end": 11788
+    },
+    {
+      "page": 4,
+      "start": 11790,
+      "end": 15230
+    },
+    {
+      "page": 5,
+      "start": 15232,
+      "end": 20364
+    },
+    {
+      "page": 6,
+      "start": 20366,
+      "end": 24675
+    },
+    {
+      "page": 7,
+      "start": 24677,
+      "end": 28282
+    },
+    {
+      "page": 8,
+      "start": 28284,
+      "end": 32975
+    },
+    {
+      "page": 9,
+      "start": 32977,
+      "end": 38760
+    },
+    {
+      "page": 10,
+      "start": 38762,
+      "end": 44573
+    },
+    {
+      "page": 11,
+      "start": 44575,
+      "end": 50446
+    },
+    {
+      "page": 12,
+      "start": 50448,
+      "end": 51767
+    },
+    {
+      "page": 13,
+      "start": 51769,
+      "end": 54619
+    },
+    {
+      "page": 14,
+      "start": 54621,
+      "end": 55660
+    },
+    {
+      "page": 15,
+      "start": 55662,
+      "end": 56112
+    },
+    {
+      "page": 16,
+      "start": 56114,
+      "end": 56481
+    }
+  ],
+  "page_count": 16,
+  "text_sha256": "fc3fe0508b54ff686c6138c526c309e7d6d734129c13d7bc7b9f5a9aec8d8baf",
+  "low_text_pages": [],
+  "injection_hits": [],
+  "created_at": "2026-10-31T08:12:16+00:00",
+  "url": "https://arxiv.org/abs/2501.13928v1",
+  "arxiv_id": "2501.13928",
+  "version": "v1",
+  "public_date": "2025-01-23",
+  "title": "Fast3R: Towards 3D Reconstruction of 1000+ Images in One Forward Pass",
+  "all_versions": {
+    "v1": "2025-01-23",
+    "v2": "2025-03-19"
+  }
+}

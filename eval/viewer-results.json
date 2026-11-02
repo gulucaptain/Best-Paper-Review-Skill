@@ -1,0 +1,160 @@
+{
+  "when": "2026-10-31T12:56:59.867Z",
+  "results": [
+    {
+      "name": "served: 4 pages",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "served: 10 comment cards",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "served: 8 region overlays",
+      "pass": true,
+      "extra": "8"
+    },
+    {
+      "name": "served: save button visible",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "served: injection banner",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "served: all evidence quotes verified in browser",
+      "pass": true,
+      "extra": "21/21"
+    },
+    {
+      "name": "select: card expanded",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "select: region highlighted",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "select: quote highlighted in text layer",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "filter: major only",
+      "pass": true,
+      "extra": "5"
+    },
+    {
+      "name": "search: ThreshSkip",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "draw: new region comment created",
+      "pass": true,
+      "extra": "[0.2,0.4998,0.4,0.0994]"
+    },
+    {
+      "name": "draw: dirty state",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "editor: refuses confirmed without evidence",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "undo removes new comment",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "save: written to disk",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "save: backup created",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "save: validation shown",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "export: annotated PDF has one annotation per comment",
+      "pass": true,
+      "extra": "11 | ['【W01｜确认问题·主要｜创新性】“首次在视频扩散中使用固定', '【W02｜确认问题·主要｜实验设计与支撑】摘要中的“延迟降低']"
+    },
+    {
+      "name": "export: JSON parses",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "export: Markdown",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "tab: overall",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "tab: dims has 9 rows",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "tab: sources",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "packaged: loads offline with 10 cards",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "packaged: 4 pages rendered",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "packaged: quotes verified",
+      "pass": true,
+      "extra": "21/21"
+    },
+    {
+      "name": "packaged: no save button",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "packaged: no page errors",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "identity: mismatch banner + read-only",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "served: no page errors",
+      "pass": true,
+      "extra": ""
+    }
+  ]
+}

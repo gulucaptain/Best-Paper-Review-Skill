@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Best-Paper-Review-Skill · 可校验的 AI 论文审稿</title>
+<meta name="description" content="A Claude / Codex skill for verifiable paper review: page-checked quotes, per-contribution parallel novelty search, counter-evidence and independent critique, neutrality against preset conclusions.">
+<meta property="og:title" content="Best-Paper-Review-Skill">
+<meta property="og:description" content="每条意见都有原文页码证据，逐条贡献并行查新，独立子代理复核，不被预设结论左右的 AI 论文审稿 Skill。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect x='4' y='4' width='120' height='120' rx='28' fill='%236d4ee0'/%3E%3Cline x1='76' y1='76' x2='98' y2='98' stroke='%23ffd166' stroke-width='15' stroke-linecap='round'/%3E%3Ccircle cx='56' cy='56' r='27' fill='none' stroke='%23ffd166' stroke-width='11'/%3E%3Cpolygon points='56,41 59.8,50.8 70.3,51.4 62.1,58 64.8,68.1 56,62.4 47.2,68.1 49.9,58 41.7,51.4 52.2,50.8' fill='%23ffd166' stroke='%23ffd166' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbfaf8; --bg2:#f3f1f7; --card:#ffffff; --ink:#17161d; --muted:#5f5d6a; --line:#e5e2ec;
+  --accent:#6d4ee0; --accent-ink:#ffffff; --accent-soft:#efeafe; --accent2:#e2559b; --gold:#c27c00; --gold-soft:#fff2cf; --star:#ffd166;
+  --good:#1f7a4d; --good-soft:#e2f4ea; --bad:#b4362b; --bad-soft:#fde8e4; --code:#15141c; --code-ink:#e9e8ef;
+  --c-acc:#6d4ee0; --c-rej:#c27c00; --c-gray:#a3a1ad; --c-pink:#d6409a;
+  --shadow:0 1px 2px rgba(25,20,40,.05),0 10px 30px rgba(25,20,40,.08);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Songti SC","Noto Serif CJK SC",SimSun,serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --pixel:"Pixelify Sans","JetBrains Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0f0e15; --bg2:#15141d; --card:#1b1a24; --ink:#eeedf3; --muted:#a6a3b4; --line:#2c2a39;
+    --accent:#a993ff; --accent-ink:#130e2a; --accent-soft:#2a2350; --accent2:#ff7fbd; --gold:#ffc24a; --gold-soft:#3a2f10;
+    --good:#58d19a; --good-soft:#143324; --bad:#ff8c80; --bad-soft:#3b1a17; --code:#0b0a10;
+    --c-acc:#8c72f5; --c-rej:#b97e10; --c-gray:#6b6e7a; --c-pink:#d0559f;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+html[lang="zh"] .en{display:none!important}
+html[lang="en"] .zh{display:none!important}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+section{padding:88px 0;scroll-margin-top:60px}
+section.alt{background:var(--bg2);border-block:1px solid var(--line)}
+h1,h2,h3{line-height:1.25;margin:0}
+p,li,.lead,.sub,h2,h3{text-wrap:pretty}
+h2{font-size:clamp(28px,3.6vw,40px);letter-spacing:-.015em;margin-bottom:12px}
+.eyebrow{font:700 12.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.lead{color:var(--muted);max-width:700px;margin:0 0 36px;font-size:17px}
+.lead b{color:var(--ink);font-weight:600}
+.lead.wide{max-width:none}
+.nw{white-space:nowrap}
+.center{text-align:center}.center .lead{margin-inline:auto}
+code,.mono{font-family:var(--mono)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+.feat .rv:nth-child(2){transition-delay:.08s}.feat .rv:nth-child(3){transition-delay:.16s}.feat .rv:nth-child(4){transition-delay:.24s}
+
+/* nav */
+nav{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid transparent;transition:border-color .2s}
+nav.scrolled{border-bottom-color:var(--line)}
+nav .wrap{display:flex;align-items:center;gap:18px;height:62px}
+.brand{font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand:hover{text-decoration:none}
+.brand svg{width:26px;height:26px}
+.series{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:99px;overflow:hidden;font:600 12.5px var(--sans)}
+.series a,.series span{padding:4px 11px;color:var(--muted)}
+.series a:hover{text-decoration:none;color:var(--ink);background:color-mix(in srgb,#3b5bdb 10%,transparent)}
+.series .on{background:var(--accent);color:var(--accent-ink)}
+.series i{font-style:normal;display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:0}
+.orgs{display:flex;align-items:center;gap:16px;margin-left:auto}
+.orgs a{display:flex;align-items:center;border-radius:8px;padding:3px 6px;transition:background .2s}
+.orgs a:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.orgs img{display:block}
+.lg-nus{height:36px;width:auto}.lg-fd{height:40px;width:40px}
+.orgs .sep{width:1px;height:26px;background:var(--line)}
+@media (prefers-color-scheme:dark){.orgs a{background:#fff}.orgs a:hover{background:#fff}}
+@media(max-width:860px){.lg-nus{height:26px}.lg-fd{height:28px;width:28px}.orgs{gap:8px}.series{display:none}}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 15px/1 var(--sans);cursor:pointer;transition:transform .12s,box-shadow .2s}
+.btn:hover{text-decoration:none;box-shadow:var(--shadow);transform:translateY(-1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:9px}
+.btn.gh{background:#17161d;border-color:#17161d;color:#fff}
+.btn.gh svg{width:18px;height:18px}
+@media (prefers-color-scheme:dark){.btn.gh{background:#fff;border-color:#fff;color:#17161d}}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.lang button{border:0;background:transparent;color:var(--muted);padding:6px 10px;font:600 13px var(--sans);cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+@media(max-width:860px){nav .wrap{justify-content:space-between}.brand span{display:none}}
+
+/* hero */
+.hero{position:relative;padding:64px 0 40px;overflow:hidden;isolation:isolate}
+.hero .blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;z-index:-2;animation:float 16s ease-in-out infinite alternate}
+.hero .b1{width:520px;height:520px;background:color-mix(in srgb,var(--accent) 45%,transparent);top:-200px;right:-120px}
+.hero .b2{width:440px;height:440px;background:color-mix(in srgb,var(--accent2) 30%,transparent);top:40px;left:-180px;animation-delay:-6s}
+.hero .b3{width:300px;height:300px;background:color-mix(in srgb,var(--star) 40%,transparent);top:300px;right:18%;animation-delay:-11s}
+@keyframes float{to{transform:translate(60px,40px) scale(1.12)}}
+.marquee{position:absolute;left:0;right:0;top:0;height:600px;z-index:-1;display:flex;flex-direction:column;justify-content:center;gap:22px;opacity:.11;pointer-events:none;mask-image:radial-gradient(ellipse 48% 60% at center,transparent 40%,#000 75%);-webkit-mask-image:radial-gradient(ellipse 48% 60% at center,transparent 40%,#000 75%)}
+.mrow{display:flex;gap:34px;white-space:nowrap;font:600 21px var(--serif);width:max-content;animation:scrollx 80s linear infinite}
+.mrow:nth-child(2){animation-direction:reverse;animation-duration:95s;font-family:var(--mono);font-size:18px}
+.mrow:nth-child(3){animation-duration:110s;font-style:italic}
+.mrow:nth-child(4){animation-direction:reverse;animation-duration:70s;font-family:var(--mono);font-size:18px}
+@keyframes scrollx{to{transform:translateX(-50%)}}
+.hero .inner{text-align:center;max-width:1080px;margin:0 auto}
+.pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:color-mix(in srgb,var(--card) 85%,transparent);border-radius:99px;padding:6px 14px;font-size:13px;color:var(--muted)}
+.pill:hover{text-decoration:none;color:var(--ink)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent);animation:ping 2s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hero h1{font-family:var(--serif);font-size:clamp(36px,6.4vw,82px);letter-spacing:-.025em;line-height:1.08;margin:24px 0 18px;white-space:nowrap}
+@media(max-width:760px){.hero h1{font-size:clamp(34px,10.5vw,60px)}.hero h1 .shine{display:block}}
+.shine{background:linear-gradient(100deg,var(--accent) 10%,var(--accent2) 38%,var(--star) 62%,var(--accent) 90%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
+@keyframes shine{to{background-position:-220% 0}}
+.tagline{font-size:clamp(19px,2.5vw,26px);font-weight:600;margin:0 0 8px;min-height:1.6em}
+.typed{color:var(--accent);border-right:2px solid var(--accent);padding-right:3px;animation:caret 1s steps(1) infinite}
+@keyframes caret{50%{border-color:transparent}}
+.sub{color:var(--muted);margin:0 auto 28px;max-width:640px;font-size:16.5px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.proof{display:grid;grid-template-columns:repeat(4,1fr);margin:40px auto 0;max-width:1040px;background:color-mix(in srgb,var(--card) 72%,transparent);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);text-align:left}
+.pf{display:flex;gap:12px;align-items:center;padding:16px 18px;color:var(--ink);border-left:1px solid var(--line);transition:background .2s}
+.pf:first-child{border-left:0}
+a.pf:hover{text-decoration:none;background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.pf:first-child{border-radius:18px 0 0 18px}.pf:last-child{border-radius:0 18px 18px 0}
+.pi{flex:none;width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:20px;background:var(--accent-soft)}
+.pf b{display:block;font-size:15px;line-height:1.35;white-space:nowrap}
+.pf b i{font-style:normal;color:var(--accent)}
+.pf div>span{display:block;white-space:nowrap;font-size:12.5px;color:var(--muted);line-height:1.4;margin-top:2px}
+@media(max-width:960px){.proof{grid-template-columns:1fr 1fr}.pf:nth-child(3){border-left:0}.pf:nth-child(n+3){border-top:1px solid var(--line)}.pf{border-radius:0!important}}
+@media(max-width:520px){.proof{grid-template-columns:1fr}.pf{border-left:0}.pf+.pf{border-top:1px solid var(--line)}}
+
+/* reader mock (hero) */
+.rdwrap{max-width:1000px;margin:72px auto 0;position:relative}
+.rdwrap::before{content:"";position:absolute;inset:-2px;border-radius:22px;background:conic-gradient(from var(--ang,0deg),var(--accent),var(--accent2),var(--star),var(--accent));z-index:-1;animation:spin 6s linear infinite;filter:blur(.5px)}
+@property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes spin{to{--ang:360deg}}
+@media(max-width:760px){.rdwrap{margin-top:48px}}
+.rd{border-radius:20px;overflow:hidden;background:var(--card);box-shadow:0 30px 80px -20px rgba(60,30,120,.45);text-align:left}
+.rdbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg2);flex-wrap:wrap}
+.rdbar .dots{display:flex;gap:6px}.rdbar .dots i{width:10px;height:10px;border-radius:50%;background:#ff6058}.rdbar .dots i:nth-child(2){background:#ffbd2e}.rdbar .dots i:nth-child(3){background:#28c940}
+.rdbar .fn{font:600 12.5px var(--mono);color:var(--muted)}
+.rdbar .ov{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-block;padding:2px 9px;border-radius:99px;font:600 12px var(--mono);background:var(--bg2);color:var(--muted)}
+.chip.ok{background:var(--good-soft);color:var(--good)}
+.chip.warn{background:var(--bad-soft);color:var(--bad)}
+.chip.vi{background:var(--accent-soft);color:var(--accent)}
+.rdbody{display:grid;grid-template-columns:64px 1fr 360px;min-height:430px}
+@media(max-width:900px){.rdbody{grid-template-columns:1fr}.rdthumbs{display:none!important}}
+.rdthumbs{border-right:1px solid var(--line);padding:12px 10px;display:flex;flex-direction:column;gap:10px;background:var(--bg2)}
+.rdthumbs button{position:relative;border:1px solid var(--line);background:#fff;border-radius:4px;height:56px;cursor:pointer;padding:0}
+.rdthumbs button.on{outline:2px solid var(--accent);outline-offset:1px}
+.rdthumbs button i{position:absolute;left:4px;right:4px;height:3px;border-radius:2px}
+.rdthumbs button span{position:absolute;right:3px;bottom:2px;font:700 9px var(--mono);color:#555}
+.rdpage{padding:22px 26px;background:color-mix(in srgb,var(--bg2) 60%,var(--card));display:flex;justify-content:center;position:relative}
+.sheet{position:relative;background:#fff;color:#1d1d22;width:100%;max-width:470px;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.12);padding:26px 30px 30px;font:12.5px/1.6 "Times New Roman",Times,serif}
+.sheet .pt{font-weight:700;font-size:15px;text-align:center;margin-bottom:4px}
+.sheet .pa{font-size:10.5px;text-align:center;color:#666;margin-bottom:12px}
+.sheet .sec{font-weight:700;font-size:12.5px;margin:10px 0 4px}
+.sheet .ln{height:7px;border-radius:2px;background:#e4e4ea;margin:7px 0}
+.sheet .ln.s{width:70%}.sheet .ln.m{width:86%}
+.sheet .q{margin:6px 0;padding:0 2px;border-radius:2px;background:transparent;box-shadow:none;transition:background .6s,box-shadow .6s}
+.sheet .q.lit{background:var(--hl,#ffe08a);box-shadow:inset 0 -2px 0 var(--hlb,#e0a800)}
+.sheet .mk{position:absolute;right:-14px;font:700 10.5px var(--mono);background:var(--mkc,#b4362b);color:#fff;border-radius:5px;padding:2px 6px;opacity:0;transform:translateX(6px);transition:opacity .4s .3s,transform .4s .3s}
+.sheet .mk.lit{opacity:1;transform:none}
+.sheet .tbl{width:100%;border-collapse:collapse;font-size:10.5px;margin:6px 0}
+.sheet .tbl td{border-top:1px solid #ccc;padding:2px 4px;text-align:center}
+.sheet .pgn{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:10px;color:#888}
+.rdside{border-left:1px solid var(--line);display:flex;flex-direction:column}
+@media(max-width:900px){.rdside{border-left:0;border-top:1px solid var(--line)}}
+.rdtabs{display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.rdtabs button{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:8px;font:700 12px var(--mono);padding:5px 10px;cursor:pointer}
+.rdtabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.cm{padding:16px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.cm .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font:600 12px var(--sans);padding:3px 10px;border-radius:99px}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.good{background:var(--good-soft);color:var(--good)}
+.tag.vi{background:var(--accent-soft);color:var(--accent)}
+.cm h4{margin:0;font-size:15.5px;line-height:1.45}
+.cm p{margin:0;font-size:14px;color:var(--muted);line-height:1.7}
+.cm .ev{font:12px/1.55 var(--mono);background:var(--bg2);border-left:3px solid var(--accent);border-radius:8px;padding:8px 10px;color:var(--ink)}
+.cm .ver{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.cm.swap{animation:vsin .45s ease both}
+@keyframes vsin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.vid{border-radius:20px;overflow:hidden;background:#0b0a10;box-shadow:0 30px 80px -20px rgba(60,30,120,.45);aspect-ratio:16/9;position:relative}
+.vid video{display:block;width:100%;height:100%;object-fit:cover}
+.vid .play{position:absolute;inset:0;display:grid;place-items:end center;padding-bottom:9%;background:linear-gradient(transparent 70%,rgba(0,0,0,.28));cursor:pointer;border:0;width:100%;color:#fff}
+.vid .play span{width:86px;height:86px;border-radius:50%;background:rgba(255,255,255,.95);display:grid;place-items:center;box-shadow:0 10px 40px rgba(0,0,0,.35);transition:transform .2s}
+.vid .play:hover span{transform:scale(1.08)}
+.vid .play svg{width:30px;height:30px;margin-left:5px;fill:#6d4ee0}
+.vid .play em{position:absolute;left:22px;bottom:18px;font:600 14px var(--sans);font-style:normal;opacity:.95}
+.vid.playing .play{display:none}
+@media(max-width:600px){.vid .play span{width:54px;height:54px}.vid .play svg{width:20px;height:20px}.vid .play{padding-bottom:6%}.vid .play em{display:none}}
+.rdcap{text-align:center;font-size:13px;color:var(--muted);margin-top:14px}
+
+/* features */
+.feat{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+@media(max-width:980px){.feat{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.feat{grid-template-columns:1fr}}
+.fc{--c:#6d4ee0;--c2:#a993ff;position:relative;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:26px 24px 22px;box-shadow:var(--shadow);transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s;overflow:hidden;display:flex;flex-direction:column;isolation:isolate}
+.fc::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;background:linear-gradient(140deg,var(--c),transparent 45%,transparent 60%,var(--c2));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .3s;pointer-events:none}
+.fc::after{content:"";position:absolute;width:220px;height:220px;right:-90px;top:-90px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 22%,transparent),transparent 70%);z-index:-1;transition:transform .5s}
+.fc:hover{transform:translateY(-6px);box-shadow:0 2px 4px rgba(20,20,30,.05),0 22px 48px -12px color-mix(in srgb,var(--c) 40%,transparent)}
+.fc:hover::before{opacity:1}.fc:hover::after{transform:scale(1.35)}
+.fc .no{position:absolute;right:20px;top:14px;font:700 54px/1 var(--serif);color:color-mix(in srgb,var(--c) 14%,transparent);letter-spacing:-.02em}
+.fc .ic{width:50px;height:50px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,var(--c),var(--c2));box-shadow:0 8px 20px -6px color-mix(in srgb,var(--c) 70%,transparent);margin-bottom:18px;color:#fff}
+.fc .ic svg{width:26px;height:26px}
+.fc h3{font-size:18.5px;margin-bottom:8px;letter-spacing:-.01em}
+.fc p{margin:0 0 18px;color:var(--muted);font-size:14.5px;line-height:1.7}
+.fc .demo{margin-top:auto;padding-top:16px;border-top:1px dashed var(--line);display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:62px}
+.fc .t{font:600 12px/1 var(--sans);padding:6px 9px;border-radius:7px;background:color-mix(in srgb,var(--c) 11%,transparent);color:var(--c);white-space:nowrap}
+.fc .t.dim{background:var(--bg2);color:var(--muted)}
+.fc .code{font:12px/1.6 var(--mono);color:var(--muted);background:var(--bg2);border-radius:9px;padding:9px 11px;width:100%;overflow-wrap:anywhere}
+.fc .code b{color:var(--c)}
+.fc .chk{display:flex;flex-direction:column;gap:5px;width:100%;font-size:13px;color:var(--ink)}
+.fc .chk span{display:flex;gap:8px;align-items:center}
+.fc .chk i{font-style:normal;width:17px;height:17px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-size:10.5px;font-weight:800;flex:none}
+.fc.rv{transition:opacity .7s ease,transform .6s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.fc.c1{--c:#6d4ee0;--c2:#a993ff}.fc.c2{--c:#c43f8e;--c2:#ff8cc4}.fc.c3{--c:#c27c00;--c2:#ffc24a}.fc.c4{--c:#2e6fd8;--c2:#7fb0ff}
+@media (prefers-color-scheme:dark){.fc.c1{--c:#a993ff}.fc.c2{--c:#ff7fbd}.fc.c3{--c:#ffc24a}.fc.c4{--c:#7fb0ff}.fc .ic{color:#10101a}}
+
+/* compare */
+.cmp{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
+.cmp .row{display:grid;grid-template-columns:150px 1fr 1fr;border-top:1px solid var(--line)}
+.cmp .row:first-child{border-top:0}
+.cmp .row>div{padding:13px 18px;font-size:14.5px}
+.cmp .hd>div{font:700 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg2)}
+.cmp .k{font-weight:700}
+.cmp .a{color:var(--muted)}
+.cmp .a::before{content:"✗ ";color:var(--bad);font-weight:700}
+.cmp .b::before{content:"✓ ";color:var(--good);font-weight:700}
+.cmp .hd .b::before,.cmp .hd .a::before{content:none}
+.cmp .hd .b{color:var(--accent)}
+@media(max-width:700px){.cmp .row{grid-template-columns:1fr}.cmp .hd{display:none}.cmp .k{background:var(--bg2);padding-bottom:6px!important}}
+
+/* pipeline */
+.flowbox{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 20px 22px;box-shadow:var(--shadow)}
+.flow{display:grid;grid-template-columns:repeat(7,1fr);gap:0;position:relative}
+.flow::before{content:"";position:absolute;left:7%;right:7%;top:22px;height:2px;background:linear-gradient(90deg,var(--accent) var(--p,0%),var(--line) var(--p,0%));transition:--p 1.8s}
+@property --p{syntax:"<percentage>";inherits:false;initial-value:0%}
+.flow.in::before{--p:100%}
+.fs{text-align:center;padding:0 6px;position:relative;cursor:pointer;border:0;background:none;font:inherit;color:inherit}
+.fs .n{width:46px;height:46px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;background:var(--card);border:2px solid var(--accent);font-size:19px;transition:transform .2s,background .2s}
+.fs[aria-selected="true"] .n{background:var(--accent);transform:scale(1.1)}
+.fs b{display:block;font-size:14.5px;line-height:1.35}
+.fs span{font-size:12.5px;color:var(--muted)}
+@media(max-width:860px){.flow{grid-template-columns:repeat(4,1fr);gap:22px 0}.flow::before{display:none}}
+@media(max-width:520px){.flow{grid-template-columns:1fr 1fr}}
+.stepd{margin-top:20px;border-top:1px dashed var(--line);padding-top:16px;display:grid;grid-template-columns:1fr auto;gap:12px 20px;align-items:start;min-height:84px}
+.stepd p{margin:0;font-size:15px;line-height:1.75}
+.stepd code{font-size:12.5px;background:var(--bg2);border-radius:6px;padding:2px 6px;white-space:nowrap}
+@media(max-width:700px){.stepd{grid-template-columns:1fr}}
+.dims{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:22px}
+.dims span{font:600 13px var(--sans);padding:7px 12px;border-radius:99px;background:var(--card);border:1px solid var(--line)}
+.dims span i{font:700 11px var(--mono);font-style:normal;color:var(--accent);margin-right:6px}
+
+/* inject */
+.inj{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:900px){.inj{grid-template-columns:1fr}}
+.ibox{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 20px}
+.ibox h3{font-size:17px;margin-bottom:4px}
+.ibox .sm{font-size:13.5px;color:var(--muted);margin:0 0 14px}
+.map{display:flex;flex-direction:column;gap:8px}
+.mp{display:grid;grid-template-columns:42px 1fr 28px 52px;gap:10px;align-items:center;padding:8px 10px;border-radius:11px;background:var(--bg2);opacity:.35;transition:opacity .5s,background .5s}
+.mp.in{opacity:1}
+.mp .hid{font:700 12px var(--mono);color:var(--gold);background:var(--gold-soft);border-radius:6px;padding:3px 0;text-align:center}
+.mp .d{font-size:13.5px;line-height:1.5}
+.mp .ar{color:var(--accent);font-weight:700;text-align:center}
+.mp .w{font:700 12px var(--mono);color:var(--accent-ink);background:var(--accent);border-radius:6px;padding:3px 0;text-align:center}
+.big{display:flex;align-items:baseline;gap:10px;margin:2px 0 10px}
+.big b{font:700 52px/1 var(--serif);color:var(--accent)}
+.big span{color:var(--muted);font-size:14px}
+.ilist{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.ilist li{display:flex;gap:10px;font-size:14px;line-height:1.6}
+.ilist li i{flex:none;font-style:normal;width:20px;height:20px;border-radius:50%;background:var(--good-soft);color:var(--good);display:grid;place-items:center;font-size:11px;font-weight:800;margin-top:2px}
+.fine{font-size:13px;color:var(--muted);margin-top:14px}
+
+/* score */
+.scgrid{display:grid;grid-template-columns:330px 1fr;gap:20px}
+@media(max-width:900px){.scgrid{grid-template-columns:1fr}}
+.verd{display:flex;flex-direction:column;gap:8px}
+.verd button{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 14px;cursor:pointer;font:inherit;color:var(--ink);transition:border-color .2s,box-shadow .2s}
+.verd button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.verd button i{flex:none;font:700 12px var(--mono);font-style:normal;padding:3px 7px;border-radius:6px;background:var(--accent-soft);color:var(--accent);margin-top:2px}
+.verd button b{display:block;font-size:14.5px}
+.verd button span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5}
+.scpanel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:22px 22px 18px;display:flex;flex-direction:column;gap:18px}
+.ruler{position:relative;padding-top:34px}
+.ticks{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.ticks div{text-align:center;padding:10px 2px;border-radius:9px;background:var(--bg2);transition:background .35s,color .35s,transform .35s}
+.ticks div b{display:block;font:700 22px/1 var(--serif)}
+.ticks div span{display:block;font-size:11px;color:var(--muted);margin-top:4px;line-height:1.3}
+.ticks div.on{background:var(--accent);color:var(--accent-ink)}
+.ticks div.on span{color:inherit;opacity:.85}
+.ticks div.def{transform:translateY(-4px)}
+.ticks div.def::after{content:"";}
+.thr{position:absolute;top:0;left:50%;transform:translateX(-50%);font:700 11px var(--mono);color:var(--muted);white-space:nowrap}
+.thr::after{content:"";position:absolute;left:50%;top:18px;width:2px;height:calc(100% + 60px);background:repeating-linear-gradient(var(--muted) 0 4px,transparent 4px 8px);opacity:.5}
+.scnote{font-size:14.5px;line-height:1.75;margin:0;min-height:52px}
+.scnote b{color:var(--accent)}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:600px){.tiers{grid-template-columns:1fr}}
+.tier{border:1px solid var(--line);border-top:3px solid var(--c);border-radius:12px;padding:10px 13px}
+.tier b{display:block;font-size:14.5px;color:var(--c)}
+.tier span{font-size:12.5px;color:var(--muted);line-height:1.55;display:block}
+.tier.a{--c:var(--bad)}.tier.b{--c:var(--gold)}.tier.c{--c:var(--muted)}
+.motto{font:600 15px var(--serif);text-align:center;color:var(--ink);background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin:0}
+
+/* neutrality */
+.ntr{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch}
+@media(max-width:860px){.ntr{grid-template-columns:1fr}}
+.say{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.sayk{font:700 11.5px/1 var(--mono);letter-spacing:.08em;color:var(--muted)}
+.stances{display:flex;flex-wrap:wrap;gap:8px}
+.stances button{border:1px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:99px;padding:8px 14px;font:600 14px var(--sans);cursor:pointer}
+.stances button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.bubble{align-self:flex-start;background:var(--accent);color:var(--accent-ink);border-radius:16px 16px 16px 4px;padding:10px 14px;font-size:15px;max-width:90%}
+.resp{border-left:4px solid var(--accent);background:var(--bg2);border-radius:12px;padding:12px 14px;font-size:14.5px;line-height:1.7}
+.resp code{font-size:12.5px}
+.resp .st{display:inline-block;font:700 12px var(--mono);padding:2px 8px;border-radius:6px;margin-bottom:6px}
+.resp .st.rec{background:var(--gold-soft);color:var(--gold)}
+.resp .st.run{background:var(--good-soft);color:var(--good)}
+.resp .st.coi{background:var(--bad-soft);color:var(--bad)}
+.guards{display:flex;flex-direction:column;gap:10px}
+.gd{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+.gd i{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-style:normal;font-size:17px}
+.gd b{display:block;font-size:15px}
+.gd span{font-size:13.5px;color:var(--muted);line-height:1.6;display:block}
+.gd code{font-size:11.5px;overflow-wrap:anywhere}
+
+/* bench */
+.bpanel{position:relative;border-radius:22px;border:1px solid var(--line);box-shadow:var(--shadow);background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 9%,var(--card)),var(--card) 55%);padding:24px 24px 18px;overflow:hidden}
+.bttl{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:16px}
+.bttl b{font:700 clamp(22px,3.4vw,38px)/1 var(--pixel);color:var(--accent);letter-spacing:.02em}
+.bttl span{font:italic 600 12.5px var(--mono);color:var(--muted)}
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.bgrid{grid-template-columns:1fr}}
+.bc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px 14px;min-width:0}
+.bc h3{font-size:15.5px;margin-bottom:2px}
+.bc.wide{grid-column:1/-1}
+.bc .sx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:700px){#chAcc{min-width:640px}}
+.bc .note{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.6}
+.bc .ds{font-size:13px;color:var(--muted);margin:0 0 10px;line-height:1.55}
+.bc svg{display:block;width:100%;height:auto;overflow:visible}
+.bc svg text{fill:var(--muted);font:12px var(--sans)}
+.bc svg .v{fill:var(--ink);font:700 12.5px var(--mono)}
+.bc svg .dl{fill:var(--good);font:700 12.5px var(--mono)}
+.bc svg .nm{fill:var(--ink);font:600 12.5px var(--sans)}
+.bc svg .grid{stroke:var(--line);stroke-width:1}
+.bc svg .base{stroke:var(--muted);stroke-width:1}
+.bc svg .chance{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 4}
+.bc svg .hit{fill:transparent;cursor:default}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.takeaway{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:760px){.takeaway{grid-template-columns:1fr}}
+.tk{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 15px;font-size:14px;line-height:1.65;color:var(--muted)}
+.tk b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+.tk em{font-style:normal;font-weight:700;color:var(--accent)}
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--ink);color:var(--bg);font:13px/1.5 var(--sans);padding:7px 10px;border-radius:8px;opacity:0;transition:opacity .12s;max-width:260px;box-shadow:var(--shadow)}
+.tip.show{opacity:1}
+.tblv{margin-top:12px}
+.tblv summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.tblv table{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px}
+.tblv td,.tblv th{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left}
+.tblv th{color:var(--muted);font-weight:600}
+
+/* outputs */
+.outs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.outs{grid-template-columns:1fr}}
+.oc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px 20px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.oc .fn{font:700 13px var(--mono);color:var(--accent)}
+.oc h3{font-size:17.5px}
+.oc p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.7}
+.oc .lk{margin-top:auto;font:600 13.5px var(--sans)}
+.modes{margin-top:22px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card)}
+.modes .mr{display:grid;grid-template-columns:210px 1fr 1.2fr;border-top:1px solid var(--line)}
+.modes .mr:first-child{border-top:0}
+.modes .mr>div{padding:11px 16px;font-size:14px}
+.modes .mr>div:first-child{font:700 13px var(--mono);color:var(--accent)}
+.modes .mr>div:last-child{color:var(--muted)}
+.modes .mh>div{background:var(--bg2);font:700 12px var(--mono)!important;color:var(--muted)!important;letter-spacing:.06em}
+@media(max-width:700px){.modes .mr{grid-template-columns:1fr}.modes .mh{display:none}.modes .mr>div{padding:6px 16px}.modes .mr>div:first-child{padding-top:12px}.modes .mr>div:last-child{padding-bottom:12px}}
+.prompt{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:12px 16px;position:relative;font-size:15px;margin-top:22px}
+.prompt p{margin:0;padding-right:62px;color:var(--ink)}
+.prompt .k{font:700 11.5px var(--mono);letter-spacing:.08em;color:var(--accent);display:block;margin-bottom:4px}
+
+/* terminal */
+.term{background:var(--code);color:var(--code-ink);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;border:1px solid #2d2b3b;position:relative}
+.term .bar{display:flex;gap:7px;align-items:center;padding:11px 14px;border-bottom:1px solid #2d2b3b}
+.term .bar i{width:11px;height:11px;border-radius:50%}
+.term .bar i:nth-child(1){background:#ff6058}.term .bar i:nth-child(2){background:#ffbd2e}.term .bar i:nth-child(3){background:#28c940}
+.term .tabs{display:flex;gap:4px;margin-left:14px;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;color:#a09cb4;font:600 12px var(--sans);padding:5px 9px;border-radius:7px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:#2d2940;color:#fff}
+.term pre{margin:0;padding:18px 20px 20px;font:13.5px/1.8 var(--mono);white-space:pre-wrap;word-break:break-all}
+.term .c{color:#827d97}.term .k{color:#c3b5ff}
+.copy{position:absolute;top:10px;right:10px;border:1px solid #3c3950;background:#25223a;color:#d3cfe2;border-radius:7px;font:600 12px var(--sans);padding:4px 9px;cursor:pointer}
+.prompt .copy{background:var(--card);border-color:var(--line);color:var(--muted);top:10px}
+.panel[hidden]{display:none}
+.cite{background:var(--code);color:var(--code-ink);border-radius:14px;padding:18px 20px;position:relative;font:13px/1.7 var(--mono);white-space:pre-wrap;overflow:auto}
+footer.site{padding:34px 0 50px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+footer.site .row{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between;align-items:center}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:40}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv{opacity:1;transform:none}.mp{opacity:1}}
+/* case study (VGGT) */
+#case .ladder{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:0 0 10px;position:relative}
+#case .ladder div{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 10px;display:flex;align-items:baseline;gap:8px;font-size:13.5px;color:var(--muted);min-width:0}
+#case .ladder div b{font:700 17px var(--mono);color:var(--ink)}
+#case .ladder div.acc{border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
+#case .ladder div.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:var(--shadow)}#case .ladder div.on b{color:var(--accent-ink)}
+#case .ladder .line{position:absolute;left:50%;top:-6px;bottom:-6px;width:0;border-left:2px dashed var(--accent);transform:translateX(-1px)}
+#case .ladcap{font-size:13.5px;color:var(--muted);margin:0 0 26px}#case .ladcap b{color:var(--ink);font-weight:600}
+@media(max-width:760px){#case .ladder{grid-template-columns:repeat(3,minmax(0,1fr))}#case .ladder .line{display:none}}
+#case .lead.wide{text-align:justify;text-justify:inter-character;hyphens:auto}
+.award{display:inline-flex;align-items:center;gap:8px;border:1px solid color-mix(in srgb,var(--gold) 45%,var(--line));background:var(--gold-soft);color:var(--gold);border-radius:99px;padding:5px 13px;font:700 12.5px var(--sans);margin-bottom:14px}
+.award svg{width:14px;height:14px}
+#case .lead{margin-bottom:18px}
+.embed{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.embed .bar{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.embed .bar button{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:5px 11px;font:600 13px var(--sans);cursor:pointer}
+.embed .bar button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.embed .bar a{margin-left:auto;font-size:13px}
+.embed iframe{display:block;width:100%;height:min(720px,78vh);border:0;background:#fff}
+.embed .mob{display:none;padding:22px 18px;text-align:center;color:var(--muted);font-size:14.5px}
+@media(max-width:760px){.embed iframe{display:none}.embed .mob{display:block}.embed .bar button{display:none}.embed .bar a{margin-left:0}}
+.why3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:20px}
+@media(max-width:900px){.why3{grid-template-columns:1fr}}
+.why3 .w{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.why3 .w .k{font:700 12px var(--mono);letter-spacing:.06em;color:var(--accent);margin-bottom:6px}
+.why3 .w h3{font-size:16.5px;margin-bottom:6px}
+.why3 .w p{margin:0;font-size:14.5px;color:var(--muted);line-height:1.65}
+.why3 .w p b{color:var(--ink);font-weight:600}
+.why3 .w.ok{border-color:color-mix(in srgb,var(--good) 40%,var(--line));background:color-mix(in srgb,var(--good-soft) 50%,var(--card))}
+.why3 .w.ok .k{color:var(--good)}
+.cnote{margin:16px 0 0;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><svg viewBox="0 0 128 128" aria-hidden="true"><rect x="4" y="4" width="120" height="120" rx="28" fill="#6d4ee0"/><line x1="76" y1="76" x2="98" y2="98" stroke="#ffd166" stroke-width="15" stroke-linecap="round"/><circle cx="56" cy="56" r="27" fill="none" stroke="#ffd166" stroke-width="11"/><polygon points="56,41 59.8,50.8 70.3,51.4 62.1,58 64.8,68.1 56,62.4 47.2,68.1 49.9,58 41.7,51.4 52.2,50.8" fill="#ffd166" stroke="#ffd166" stroke-width="5" stroke-linejoin="round"/></svg><span>Best-Paper-Review-Skill</span></a>
+    <div class="series" aria-label="Best-Paper series"><a href="https://gulucaptain.github.io/Best-Paper-Writing-Skill/" target="_blank" rel="noopener"><i style="background:#3b5bdb"></i>Writing</a><span class="on"><i style="background:#ffd166"></i>Review</span></div>
+    <div class="orgs">
+      <a href="https://nus.edu.sg" target="_blank" rel="noopener" title="National University of Singapore"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAACJCAYAAACW2wWcAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOjFlZDg0MDFmLTUzZWItNGMxNy1hOTQxLTMzYTk1MDU4MzhmZQAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNoaYouNhIUkGVN2GCZPtvEqgAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6NjZkNTUyYjItYTI5Ni00NWFjLThiMGUtMjQyNzUyMDQxOGMxbHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaPUpsjbSVh9nDkh2agvkZBoAAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYIKXXZaotdPBAl3tZNd977EHJGSD3KdcIgn2OBHKEIHbQpGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2iOnBSkjIg2Y3WgxTage8k+AAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggDQe52RuNDN01FUZMIOgpXD0q9+oXYBObA+tv9uVeEMtkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYToxZWQ4NDAxZi01M2ViLTRjMTctYTk0MS0zM2E5NTA1ODM4ZmUvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDpiMWMzODYwMi00YjM0LTRmMDUtODI1Yi1lZjU0MTQ0ZTc1MDZyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggpddlqi108ECXe1k133vsQckZIPcp1wiCfY4EcoQgdtCiY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYIOUZwaZeQDiXlgiM/gUEjAorfnCkrXeoQHrjSA5NvCj3omN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYIGPYAiUvStWJKZD4amaaeE10IEMJo70hqKPzYvHQkEcWdGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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" alt="NUS" class="lg-nus"></a>
+      <i class="sep"></i>
+      <a href="https://www.fudan.edu.cn" target="_blank" rel="noopener" title="Fudan University"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAyMy4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0i5Zu+5bGCXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIwIDAgNTM5IDUzOCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgNTM5IDUzODsiIHhtbDpzcGFjZT0icHJlc2VydmUiIHhtbG5zOmMycGE9Imh0dHA6Ly9jMnBhLm9yZy9tYW5pZmVzdCI+PG1ldGFkYXRhPjxjMnBhOm1hbmlmZXN0PkFBQVdnbXAxYldJQUFBQWVhblZ0WkdNeWNHRUFFUUFRZ0FBQXFnQTRtM0VEWXpKd1lRQUFBQlpjYW5WdFlnQUFBRWRxZFcxa1l6SnRZUUFSQUJDQUFBQ3FBRGliY1FOMWNtNDZZekp3WVRwa1ptWmtZemt3TUMxa1ltRmxMVFF5TlRZdE9EWTNaUzFsWVdSaE1qUTFNREEzWVdRQUFBQURsMnAxYldJQUFBQXBhblZ0WkdNeVlYTUFFUUFRZ0FBQXFnQTRtM0VEWXpKd1lTNWhjM05sY25ScGIyNXpBQUFBQUx4cWRXMWlBQUFBUkdwMWJXUmpZbTl5QUJFQUVJQUFBS29BT0p0eEUyTXljR0V1YVc1bmNtVmthV1Z1ZEM1Mk13QUFBQUFZWXpKemFHNFREQnpJdklHNk9CdXAyYXdEUmtNQUFBQndZMkp2Y3FOcFpHTTZabTl5YldGMGJXbHRZV2RsTDNOMlp5dDRiV3hxYVc1emRHRnVZMlZKUkhnc2VHMXdPbWxwWkRwa05qaGhZalJrWXkxaU1EbG1MVFExTkRjdE9USmxNQzFtTVdSaFlqUm1NVGt6TW1ac2NtVnNZWFJwYjI1emFHbHdhSEJoY21WdWRFOW1BQUFCNG1wMWJXSUFBQUJCYW5WdFpHTmliM0lBRVFBUWdBQUFxZ0E0bTNFVFl6SndZUzVoWTNScGIyNXpMbll5QUFBQUFCaGpNbk5vdUc5YTVRSCtFUE0xYUpSVy9KdmVoUUFBQVpsalltOXlvbWRoWTNScGIyNXpncUptWVdOMGFXOXVhMk15Y0dFdWIzQmxibVZrYW5CaGNtRnRaWFJsY25PaGEybHVaM0psWkdsbGJuUnpnYUpqZFhKc2VDMXpaV3htSTJwMWJXSm1QV015Y0dFdVlYTnpaWEowYVc5dWN5OWpNbkJoTG1sdVozSmxaR2xsYm5RdWRqTmthR0Z6YUZnZ1hrYmJwQlFrVXc2dUZvRHRMeGhrQ0Jram45SVpNMU8ydnVPVWphVG1rZU9rWm1GamRHbHZibmdkWTI5dExtRnVkR2h5YjNCcFl5NWpiR0YxWkdVdWNISnZkbWxrWldScWNHRnlZVzFsZEdWeWM2RjRIMk52YlM1aGJuUm9jbTl3YVdNdWIzSnBaMmx1TFdOdmJtWnBaR1Z1WTJWbmRXNXJibTkzYm10a1pYTmpjbWx3ZEdsdmJuaG1RMnhoZFdSbElIQnliM1pwWkdWa0lIUm9hWE1nWm1sc1pTQmhkQ0IwYUdVZ2NtVnhkV1Z6ZENCdlppQmhJSFZ6WlhJZ1lXNWtJRzFoZVNCb1lYWmxJR055WldGMFpXUWdiM0lnYlc5a2FXWnBaV1FnZEdobElHWnBiR1VnWTI5dWRHVnVkSE11YlhOdlpuUjNZWEpsUVdkbGJuU2haRzVoYldWbVEyeGhkV1JsY21Gc2JFRmpkR2x2Ym5OSmJtTnNkV1JsWlBVQUFBRElhblZ0WWdBQUFFQnFkVzFrWTJKdmNnQVJBQkNBQUFDcUFEaWJjUk5qTW5CaExtaGhjMmd1WkdGMFlRQUFBQUFZWXpKemFKMGdaeHVySUU2SUdUWTBxamE0UmljQUFBQ0FZMkp2Y3FWallXeG5abk5vWVRJMU5tTndZV1JNQUFBQUFBQUFBQUFBQUFBQVpHaGhjMmhZSVBLZFVKbjBPcWxiWVdueFlXaEVLTHJiSnBLb2RlcDFidFpsQUw0bElDc3paRzVoYldWdWFuVnRZbVlnYldGdWFXWmxjM1JxWlhoamJIVnphVzl1YzRHaVpYTjBZWEowR1FHZlpteGxibWQwYUJrZUJBQUFBajVxZFcxaUFBQUFKMnAxYldSak1tTnNBQkVBRUlBQUFLb0FPSnR4QTJNeWNHRXVZMnhoYVcwdWRqSUFBQUFDRDJOaWIzS2xZMkZzWjJaemFHRXlOVFpwYzJsbmJtRjBkWEpsZUUxelpXeG1JMnAxYldKbVBTOWpNbkJoTDNWeWJqcGpNbkJoT21SbVptUmpPVEF3TFdSaVlXVXROREkxTmkwNE5qZGxMV1ZoWkdFeU5EVXdNRGRoWkM5ak1uQmhMbk5wWjI1aGRIVnlaV3BwYm5OMFlXNWpaVWxFZUN4NGJYQTZhV2xrT21aa05UY3lOR0l6TFRVd01USXROREpqTVMxaU5UVTJMVE0wT1dSbE4yRmhaVEJsWTNKamNtVmhkR1ZrWDJGemMyVnlkR2x2Ym5PRG9tTjFjbXg0TFhObGJHWWphblZ0WW1ZOVl6SndZUzVoYzNObGNuUnBiMjV6TDJNeWNHRXVhVzVuY21Wa2FXVnVkQzUyTTJSb1lYTm9XQ0JlUnR1a0ZDUlREcTRXZ08wdkdHUUlHU09mMGhrelU3YSs0NVNOcE9hUjQ2SmpkWEpzZUNwelpXeG1JMnAxYldKbVBXTXljR0V1WVhOelpYSjBhVzl1Y3k5ak1uQmhMbUZqZEdsdmJuTXVkakprYUdGemFGZ2d6MFd2TnFQbjltbVBXeEZnam03N3c3R3A1ZGtlVU5FYVkzVnVQN1NwaFNTaVkzVnliSGdwYzJWc1ppTnFkVzFpWmoxak1uQmhMbUZ6YzJWeWRHbHZibk12WXpKd1lTNW9ZWE5vTG1SaGRHRmthR0Z6YUZnZ3lzZDNwekxIQWNPU1FrSGgyWGpSUU9zZUUzZWJBdVYvZDhxOTdwT2JaSzUwWTJ4aGFXMWZaMlZ1WlhKaGRHOXlYMmx1Wm0ralpHNWhiV1Z2UVc1MGFISnZjR2xqSUVacGJHVnpaM1psY25OcGIyNWxNUzR3TGpCcmMzQmxZMVpsY25OcGIyNWxNaTQwTGpBQUFCQTRhblZ0WWdBQUFDaHFkVzFrWXpKamN3QVJBQkNBQUFDcUFEaWJjUU5qTW5CaExuTnBaMjVoZEhWeVpRQUFBQkFJWTJKdmN0S0VXUUlTb2dFbUdDRlpBZ293Z2dJR01JSUJqYUFEQWdFQ0FoUkE1YUFLN3NJNTBMNjRnL29HUWdVOVoxVVRBREFLQmdncWhrak9QUVFEQXpCSk1SY3dGUVlEVlFRS0V3NUJiblJvY205d2FXTXNJRkJDUXpFdU1Dd0dBMVVFQXhNbFFXNTBhSEp2Y0dsaklFTnZiblJsYm5RZ1EzSmxaR1Z1ZEdsaGJITWdVbTl2ZENCRFFUQWVGdzB5TmpBNE1EY3hPRFF6TlRaYUZ3MHlPREE0TURZeE9UUXpOVFphTUVReEZ6QVZCZ05WQkFvVERrRnVkR2h5YjNCcFl5d2dVRUpETVNrd0p3WURWUVFERXlCQmJuUm9jbTl3YVdNZ1EyeGhkV1JsSUVOdmJuUmxiblFnVTJsbmJtbHVaekJaTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEEwSUFCSmg2Q212TFVCZ0ZGTlUwdlVLbE9WdEU2ZGpkMTdMNVN1d1gwTGVtRmlzQk0zZGtkLzNjeWp4RkEzUW81UzQ2ZlgwL2loWTBWWjdtZmI5S0Y3MDN0NU9qV0RCV01BNEdBMVVkRHdFQi93UUVBd0lIZ0RBVkJnTlZIU1VFRGpBTUJnb3JCZ0VFQVlQb1hnSUJNQXdHQTFVZEV3RUIvd1FDTUFBd0h3WURWUjBqQkJnd0ZvQVV6bEhpQklGT1pGc2orT1BFejVvK25NSFhYTUl3Q2dZSUtvWkl6ajBFQXdNRFp3QXdaQUl3TVhNZEZKNEJldExMVlk3T1J1RTlub3FiYkFaT1puL2FBclh5VHdGQVpmS3JQenhGMnZQb0pOZjErVUNkZzFYR0FqQndYMXpkOVdHcVlrcW1MNVNGcXcxUXlTanIxekpmcEpNOSsxcmREd1NQTE1PUE9qS3VpWGpvVS9wVVVlRzlSd21oWTNCaFpGa05uZ0FBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQVBaWVFKcjY1SmpZaXhBQVluS0wrMHd3S29xUjc4bGRsUTFNYWt4a3pMVzJIUGY4cjAxTDlzdm13VExSbmtLVlYrR3prTGFIb0tXRmwxb2k4azlrR0VHcGJiZz08L2MycGE6bWFuaWZlc3Q+PC9tZXRhZGF0YT4NCjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+DQoJLnN0MHtmaWxsOiMwRTQxOUM7fQ0KPC9zdHlsZT4NCjxnPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0wLDI4OGMwLTEyLDAtMjQsMC0zNmMwLjI2LTAuOTMsMC42My0xLjg0LDAuNzgtMi43OWMyLjY1LTE2LjczLDQuMDYtMzMuNzcsOC4xMy01MC4xNA0KCQlDMjIuODksMTQyLjg0LDU0LjM5LDk3LjUyLDk4LjM0LDYwLjQ4YzM3LjMxLTMxLjQ1LDgwLjE2LTUwLjY5LDEyOC41LTU3LjU0QzIzNC44NywxLjgsMjQyLjk1LDAuOTcsMjUxLDBjMTIuMzMsMCwyNC42NywwLDM3LDANCgkJYzkuMDIsMS4xMSwxOC4wOCwxLjk1LDI3LjA1LDMuMzZjNjEuMDYsOS42MiwxMTEuOCwzOC4zNiwxNTMuNDQsODMuNTdjMzUuNzYsMzguODIsNTguOCw4My45Nyw2Ni43LDEzNi40NQ0KCQljMS4zOCw5LjE5LDIuNTQsMTguNDEsMy44LDI3LjYyYzAsMTIsMCwyNCwwLDM2Yy0wLjMzLDEuOTQtMC44MiwzLjg4LTAuOTYsNS44M2MtMS41NywyMi41My02LjE5LDQ0LjQzLTEzLjQ0LDY1Ljc4DQoJCWMtMTQuNjUsNDMuMS00MC4xMiw3OS4wNS03My4zOCwxMDkuNjRjLTM4LjA1LDM0Ljk5LTgyLjI5LDU3Ljc3LTEzMy42NCw2NS45MWMtOC44NCwxLjQtMTcuNzIsMi41Ni0yNi41NywzLjg0Yy0xNSwwLTMwLDAtNDUsMA0KCQljLTEuNDMtMC4zMi0yLjg1LTAuODItNC4zLTAuOTVjLTIwLjYyLTEuOS00MC43NS02LjEzLTYwLjM4LTEyLjcyQzEzOS4zNyw1MTAuMjQsMTAzLjk3LDQ4Niw3My42MSw0NTQuMg0KCQlDMzQuOSw0MTMuNjcsMTAuNTksMzY1Ljk1LDIuOTMsMzEwLjEyQzEuOTEsMzAyLjc1LDAuOTcsMjk1LjM3LDAsMjg4eiBNMjcxLjA1LDUyNi4zNWMxMzkuNzgsMi4wOCwyNjAuMDktMTE3LjQ3LDI1Ni40Mi0yNjMuMg0KCQljLTMuMzktMTM0LjYtMTE3LjEzLTI1Mi41Ny0yNjIuNTgtMjQ5LjhjLTEzMi41MywyLjUyLTI1MSwxMTIuNzEtMjUxLjE0LDI1Ni44MUMxMy42Miw0MTIuOTMsMTMyLjE0LDUyOC45LDI3MS4wNSw1MjYuMzV6Ii8+DQoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTI2OS40Myw4OS43N2M5OS40NC0zLjEzLDE4My4yMiw4MS40MywxODIuOTYsMTgxLjgzYy0wLjI2LDk5LjQtODMuNDgsMTgxLjI2LTE4MS44NSwxODENCgkJQzE2OC44LDQ1Mi4zMyw4OC4zNSwzNjguOTQsODguNjIsMjcwLjg0Qzg4LjksMTY4LjUyLDE3NC42Myw4NS44OSwyNjkuNDMsODkuNzd6IE0yNzIuMjQsMTAzLjY1DQoJCWMtOTIuNjQtMi4wOS0xNjguNjgsNzQuNi0xNjkuNDcsMTY1Ljc3Yy0wLjc5LDkxLjY2LDczLjg4LDE2OS40OCwxNjcuNzgsMTY5LjM3Yzk0LjU2LTAuMTEsMTY5LjEzLTc4LjgsMTY3LjY0LTE3MC41MQ0KCQlDNDM2LjY1LDE3NC4xMywzNTcuNzUsMTAyLjM4LDI3Mi4yNCwxMDMuNjV6Ii8+DQoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTIxNS4yOCw0ODkuODFjLTMuMzktMC42NC02Ljg0LTEuMS0xMC4xNy0xLjk2Yy01LjU5LTEuNDYtMTAuNDktNC4wMi0xMy44NS05LjA3DQoJCWMtNS45OC05LjAxLTQuMjEtMjEuNzQsNC42MS0yOC4wN2M2LjU2LTQuNzEsMTQuMTItMy4xMywyMS4xOS0xLjI2YzE0LjM2LDMuOCwyMC4wMywxNC4yNSwxNi41NCwzMC4xNQ0KCQljLTEuMTMsNS4xNy0yLjc3LDEwLjI3LTQuNjUsMTUuMjNjLTMuMzUsOC44NC0xMy44NywxNS41Mi0yMy4yNSwxNS4xNWMtMTIuMTMtMC40Ny0yMS45My03LjIzLTI1LTE3LjI4DQoJCWMtMC4yOS0wLjk0LTAuOS0yLjEzLTAuNTgtMi44NmMxLjMyLTMuMDIsMi45My01LjkxLDQuNDQtOC44NWMyLjAzLDEuOSw0Ljc4LDMuNDMsNS45Niw1Ljc2YzQuNjQsOS4xOCwxMC42NCwxMy4wNiwxOC4xOCwxMC4yNw0KCQljMi43OS0xLjAzLDUuMDItMy42MSw3LjUtNS40OEMyMTUuODksNDkwLjk2LDIxNS41OSw0OTAuMzgsMjE1LjI4LDQ4OS44MXogTTIxMi41LDQ3Ny4xMWM1LjkzLDAuMDEsMTAuMjYtMy40NSwxMC40My04LjMzDQoJCWMwLjEzLTMuODYtOC4zNS0xMC4zNy0xMy43LTEwLjUyYy00LjA0LTAuMTEtOC40Miw0Ljc2LTguNSw5LjQ0QzIwMC42NCw0NzMuMDcsMjA1LjY3LDQ3Ny4xLDIxMi41LDQ3Ny4xMXoiLz4NCgk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMzI1LjIzLDQ5Mi44OGMwLjMsMTUuMTItOS4wMywyNy4yOC0yMS40NiwyNi44NWMtMTYuMjgtMC41Ny0yNS42NS02LjcyLTI4Ljg0LTIyLjczDQoJCWMtMS43Mi04LjY0LTMuNC0xNy4zOSwwLjA0LTI2LjA3YzMuMjMtOC4xNSw4LjU5LTEzLjgsMTcuNzMtMTQuODVjMTAuMTYtMS4xNiwxOS4xOSwwLjA5LDI0Ljk1LDEwLjI0DQoJCUMzMjIuMzksNDc0LjY0LDMyNS4wNiw0ODMuMzYsMzI1LjIzLDQ5Mi44OHogTTI4Ni41Nyw0ODYuNTRjMC44OCwzLjUzLDEuNTcsOC4xOCwzLjIzLDEyLjQ0YzIuMzEsNS45Miw2LjY2LDguNiwxMS4zMiw4DQoJCWM1LjEtMC42NiwxMC4xOC01LjQ4LDEwLjctMTEuMWMwLjc3LTguMTYtMS4yLTE1LjkyLTUuNTktMjIuODNjLTIuMjgtMy41OS02LjAxLTUuMzEtMTAuMzYtNC42M2MtNC41NCwwLjcxLTYuNzgsNC4wMS03Ljc5LDguMTINCgkJQzI4Ny4zOCw0NzkuNDMsMjg3LjE3LDQ4Mi40NCwyODYuNTcsNDg2LjU0eiIvPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0zNjMuNjIsNDcxLjQ1Yy00Ljk0LTEwLjQ3LTkuMi0xOS40NS0xMy40MS0yOC40NmMtMS4yOS0yLjc2LTAuOTQtNC43MSwyLjIzLTYuMzINCgkJYzguMy00LjIxLDE2LjQyLTguNzYsMjQuNTUtMTMuMjhjNC4wNS0yLjI1LDcuMTEtMC43OSw5LjUxLDIuNDZjMi41NCwzLjQ1LDEuNjYsNi43OC0xLjY1LDkuMTFjLTIuOTYsMi4wOC02LjI2LDMuNzEtOS40OCw1LjM5DQoJCWMtMy4zNywxLjc2LTYuODMsMy4zNC0xMC42Myw1LjE4YzEuMDgsMi45MywyLjA5LDUuNjcsMy40NSw5LjM3YzMuMzktMi40LDYuNDktNC4yLDkuMTItNi41M2M5LjQ1LTguMzMsMjIuNTgtNi4zMiwyOC45NSw0LjU5DQoJCWM1LjQ0LDkuMzMsNC41OSwyMS40NS0yLjAzLDI4Ljk1Yy04LjE0LDkuMjItMTkuNzgsMTIuNDYtMjkuNjcsNy45NWMtMy4zMS0xLjUxLTcuNzQtMi44Mi02LjA3LTguMTJjMS40Ni00LjY1LDQuOC01Ljg3LDEwLjYtNC4yMw0KCQljOC40MywyLjM4LDEyLjI5LDAuOTQsMTcuMTgtNi40YzIuODUtNC4yOSwyLjAxLTkuNzQtMi4xLTEzLjQ3Yy0zLjk1LTMuNTktNy4wOC0zLjI1LTExLjg5LDAuNDUNCgkJQzM3Ni41NCw0NjIuNTEsMzcwLjUxLDQ2Ni41NCwzNjMuNjIsNDcxLjQ1eiIvPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik05Ny4xNywxMTAuMzZjMi45NiwyLjU5LDUuOTUsNS4xNSw4Ljg3LDcuNzhjMi45NywyLjY3LDYuMDEsNS4yOCw4Ljc4LDguMTVjNC42OSw0Ljg2LDkuMjMsOS44NiwxNy45Niw4LjA1DQoJCWMtMi41Niw3LjYyLTcuNjUsMTEuMTktMTIuOTcsMTQuNDRjLTAuNTgsMC4zNS0yLjcxLTAuNTktMy4xMS0xLjQyYy00LjkyLTEwLjA5LTE0LjU0LTE1LjgzLTIxLjg5LTIzLjYzDQoJCWMtNC40NS00LjczLTguNjgtMTAuMjktMTYuMTctMTAuODJjLTAuOTItMC4wNi0xLjc1LTEuMzMtMy4yMS0yLjUzYzQuNC00LjY5LDguNDYtOS4yNiwxMi44Ny0xMy40OGMwLjc5LTAuNzYsMy4wOC0wLjM1LDQuNTMsMC4wNA0KCQljMTEuMDEsMywyMS45OSw2LjE0LDMzLjMyLDguNjRjLTcuMjgtNi4wMS0xMC40OS0xNy4wNi0yMi43OS0xNi43MWMtNC4xMywwLjEyLTMuMTEtNC4yLTEuNjQtNS45OGMyLjU1LTMuMSw2LjAyLTUuNDQsOC44NC03Ljg3DQoJCWMxMi41LDEzLjkxLDI0LjQ2LDI3LjA2LDM2LjE2LDQwLjQ0YzEuMjgsMS40NywxLjExLDQuMjEsMS42MSw2LjM2Yy0yLjExLDAuMTEtNC4zOCwwLjc4LTYuMywwLjIzDQoJCWMtMTQuMDUtNC4wNC0yOC4wMy04LjMzLTQyLjAzLTEyLjUyYy0wLjYtMC4xOC0xLjI1LTAuMjEtMS44Ny0wLjMxQzk3LjgxLDEwOS42MSw5Ny40OSwxMDkuOTgsOTcuMTcsMTEwLjM2eiIvPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik00MzIuNDEsODMuMThjMTAuNDEsOS40NywyMS42MywxNi41LDI3Ljc2LDI4LjMzYzEuOTIsMy43LDIuODIsOC43NSwyLjEyLDEyLjgyDQoJCWMtMS40MSw4LjEtOS4wMSwxMS45OC0xNy42NywxMC4yMWMtNi45LTEuNDEtNy4wNy0xLjQ1LTguNzMsNS4zOGMtMS4xNyw0LjgyLTIuMDQsOS43My0yLjU5LDE0LjY2Yy0wLjMzLDIuOTEtMS43MSwzLjY0LTQuMjMsMy41Ng0KCQljLTctMC4yMi0xMS4yNS03Ljc0LTcuOTEtMTQuMTljMS42LTMuMDksMy41Mi02LjAyLDUuMDctOS4xNGMyLjM2LTQuNzUsMi4wMi05LjMtMi4wNi0xNC4wMmMtNS4wNiwzLjk2LTExLjExLDYuNzQtMTIuMzUsMTQuMjQNCgkJYy0wLjI0LDEuNDMtMS4yOSwzLjE5LTIuNDksMy44M2MtMC43LDAuMzgtMi43MS0wLjg4LTMuNjQtMS44N2MtMy4wOC0zLjI2LTYuMTctNi41Ni04LjgyLTEwLjE2Yy0yLjUtMy40LTEuMjYtNS45LDIuODYtNS43Mg0KCQljNC4xNSwwLjE4LDYuODItMS42Nyw5LjQ1LTQuNDljNS4yMS01LjYsMTAuNTItMTEuMTMsMTYuMDYtMTYuNGMzLjY5LTMuNSw2LjIyLTcuMjYsNi4wNi0xMi41NA0KCQlDNDMxLjI1LDg2LjYsNDMxLjgxLDg1LjQ5LDQzMi40MSw4My4xOHogTTQ1Mi4xMSwxMTUuNzVjLTAuMDYtMy43OS03LjEzLTExLjc2LTEwLjQzLTExLjc1Yy0yLjkzLDAtMTEuMDYsOC40Ni0xMC45MSwxMS4zNQ0KCQljMC4yMyw0LjMxLDYuNTcsMTAuMDUsMTEuMDIsOS45OEM0NDcuMTcsMTI1LjIzLDQ1Mi4xOSwxMjAuNTcsNDUyLjExLDExNS43NXoiLz4NCgk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNNDcyLjQsMTcyLjczYzAuNjgsNi41MywxLjM0LDExLjQ5LDEuNjksMTYuNDZjMC42MSw4LjQ1LTQuMDgsMTMuODMtMTIuNjMsMTQuNzcNCgkJYy0xMi43NSwxLjQxLTIyLjc1LTYuMjItMjUuMjktMTkuNTFjLTAuNTktMy4wOC0wLjg3LTYuMjktMC43My05LjQyYzAuMTQtMy4xLTAuMDUtNS4xNC0zLjYzLTYuMzdjLTMuMjEtMS4xLTMuMTItMy44OC0wLjI0LTUuNTgNCgkJYzQuMjgtMi41Myw4LjcyLTQuOSwxMy4zMi02Ljc2YzEuNTUtMC42MywzLjgxLDAuNDcsNS43NSwwLjc4Yy0wLjQ3LDEuNzYtMC4zNiw0LjE1LTEuNDksNS4xOWMtNy4wNCw2LjQ5LTUuODYsMTQuMjktNC4wMSwyMi4yNA0KCQljMC4yOSwxLjI1LDAuODgsMi44NCwxLjg1LDMuNDVjMi43NiwxLjc0LDUuOTksNC41NSw4LjY3LDQuMmM0LjMtMC41Nyw1LjM0LTUuMDQsNS4wMS05LjExYy0wLjQ3LTUuOTYtMS41NS0xMS44OS0xLjgyLTE3Ljg2DQoJCWMtMC4zMS02LjgyLDEuMzYtMTIuODMsOC4zNS0xNi4xNWMxMS42LTUuNTIsMjMuODUsMS40NywyNi42NywxNS4zM2MxLjI4LDYuMzEsMi44NywxMi41NywzLjkxLDE4LjkzDQoJCWMwLjI1LDEuNTMtMC42OSw0LjA3LTEuOTEsNC44NmMtMi43MiwxLjc4LTUuOTEsMi45My05LjAzLDMuOTZjLTEuMiwwLjM5LTIuNzQtMC4yNC00LjEyLTAuNDFjMC4yNS0xLjQxLDAuMDMtMy4yNCwwLjgzLTQuMTcNCgkJYzcuNTMtOC43Nyw0LjI3LTE3LjcsMC42NC0yNi42NWMtMS4yNC0zLjA2LTMuNjgtNS40Ny02Ljg1LTQuM2MtMS44NywwLjY5LTMuNjEsMy42LTQuMSw1LjgNCgkJQzQ3Mi4zOSwxNjYuMjQsNDcyLjU1LDE3MC4zLDQ3Mi40LDE3Mi43M3oiLz4NCgk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMjEuMTUsMjQwLjYyYzEuNDQtMTAuNzYsMi42OS0yMi40NSw0LjY4LTM0YzEuMTMtNi41Nyw1LjY2LTkuNzUsMTIuODQtMTAuNDkNCgkJYzExLjk4LTEuMjQsMjMuNTMsMS4xNCwzNC43Nyw0Ljg5YzcuNjEsMi41NCwxMi43OSwxMC4xOSwxMi4wMiwxOC44M2MtMC43OCw4LjctMi45NCwxNy4zLTQuNzYsMjUuODgNCgkJYy0wLjM5LDEuODMtMS44NywzLjQ0LTIuMzYsNC4yOWMtOS43NS0yLjA5LTE4LjgzLTQuMzgtMjguMDMtNS45QzQxLjA0LDI0Mi41OSwzMS42NiwyNDEuODUsMjEuMTUsMjQwLjYyeiBNNzQuNTcsMjM2Ljk5DQoJCWMwLjg5LTMuMiwxLjg0LTUuODUsMi4zNS04LjU5YzEuNjktOS4wNy0wLjE4LTEzLjU4LTguNy0xNy4wNmMtNS44OC0yLjQtMTIuMzctMy41OC0xOC43LTQuNTZjLTEyLjgxLTEuOTctMTUuMjEtMC4wNi0xNy43MSwxMi44Mw0KCQljLTAuNTMsMi43Mi0wLjc2LDUuNDktMS4yLDguNzZDNDUuMzksMjMxLjI3LDU5LjY3LDIzNC4wNyw3NC41NywyMzYuOTl6Ii8+DQoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTIyNS43MywzNS41NmMwLjg3LDguMTksMS44OSwxNi4zNywyLjU3LDI0LjU3YzAuNTIsNi4yNywxLjY5LDEyLjE1LDcuNDUsMTYuMTUNCgkJYy01LjAzLDQuNzYtMTAuNTYsNC44Mi0xNS45OSw0LjZjLTAuNzktMC4wMy0yLjQtMi45OC0yLjA1LTQuMDVjMy40My0xMC4zOSwwLjAxLTIwLjQ4LTEuMjEtMzAuNmMtMC44OS03LjM4LTMuMDYtMTQuNi00Ljc2LTIyLjM2DQoJCWM4LjQtNC42OCwxNC42LTMuNzUsMjEuMzEsNC41NmM0LjQ5LDUuNTYsOC40OSwxMS41MiwxMi44OSwxNy4xNWMyLDIuNTYsNC40NCw0Ljc4LDcuNzQsNi42OGMtMC43Ny03LjgyLTEuMTQtMTUuNzItMi41Mi0yMy40Mw0KCQljLTAuNDgtMi43MS0zLjQzLTQuOTktNS41Ni03Ljg5YzQuNTctNS4zMiwxMC44My0yLjg3LDE3LjE4LTIuODljLTYuNjMsMTIuMzYtMS4zMywyNC43My0xLjM4LDM2Ljk2DQoJCWMtMC4wMiw1LjE1LDAuNzcsMTAuMywwLjY5LDE1LjQ0Yy0wLjAzLDEuOC0xLjYsMy41Ny0yLjQ2LDUuMzVjLTEuNTUtMC45NS0zLjYxLTEuNTMtNC41Ny0yLjg5DQoJCWMtNy43LTEwLjg2LTE1LjE3LTIxLjg4LTIyLjc5LTMyLjc5Yy0xLjM1LTEuOTQtMy4wOC0zLjYxLTQuNjQtNS40MUMyMjYuOTksMzUsMjI2LjM2LDM1LjI4LDIyNS43MywzNS41NnoiLz4NCgk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMzUxLjc4LDk0LjYxYzEyLjI1LTExLjg2LDIwLjc5LTI1LjE3LDI3LjM0LTM5LjhjMS45NC00LjM0LDIuOTItNS4wNCw2LjgyLTIuNTYNCgkJYzkuNTUsNi4wOCwxOS4xMSwxMi4xMiwyOC41OCwxOC4zM2M1Ljg0LDMuODMsNS4zMyw5LjEtMS40MSwxMi43N2MtMy4xNC05LjI1LTExLjQtMTIuODQtMTkuMDEtMTcuMjUNCgkJYy0yLjI2LTEuMzEtMy42My0xLjE0LTUuNTYsMC43MmMtOC45OCw4LjY0LTguODksMTAuNDQsMi4wOCwxNi4zNGMyLjIxLDEuMTksNC45NiwxLjUyLDcuNTEsMS44NmMyLjI0LDAuMyw0LjU1LDAuMDYsNi44MywwLjA2DQoJCWMtMC4wNyw3LjQxLTQuMSwxMy4wOS0xMC41MSwxNS4xM2MtMi4zMS02LjgzLTYuOTQtMTEuNzItMTMuNTUtMTQuMzdjLTEuNi0wLjY0LTQuNzItMC4wNC01Ljg3LDEuMTkNCgkJYy04LjQxLDkuMDEtNy45NywxMS40MSwxLjg2LDE4LjcxYzQuOTUsMy42OCw5Ljg5LDYuMTMsMTYuMSwzLjQ3YzAuNTktMC4yNSwxLjMxLTAuMjQsMS45Ny0wLjI0YzAuNDcsMCwwLjkzLDAuMTksMS4zNywwLjI5DQoJCWMxLjMxLDctNC4wNywxMi0xMC40Nyw5LjQ4Yy0zLjUyLTEuMzktNi43OC0zLjU0LTkuOTUtNS42NmMtNi4zNi00LjI2LTEyLjY2LTguNjMtMTguODItMTMuMTcNCgkJQzM1NC45NCw5OC4zNCwzNTMuMjYsOTYuMTIsMzUxLjc4LDk0LjYxeiIvPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik01MC4zNywzMjQuNzhjNC4xMi02LjMyLDguMDEtNy43MywxNC45NS02LjQxYzEuMjIsNi42NywyLjM0LDEyLjg3LDMuNTEsMTkuMDZjMC42MiwzLjMsMi45Niw0LjYsNS44NCwzLjU0DQoJCWM1Ljk0LTIuMTcsMTMuNjUtMS4xNiwxNi43NS04LjkzYzAuMjEtMC41MywzLjY0LTAuNjYsMy44OS0wLjE1YzIuNyw1LjU3LDUuMDYsMTEuMyw4LjEyLDE4LjM3Yy0xMi4xOC0yLjg5LTIwLjc1LDIuODctMjkuODksNS43NQ0KCQljLTkuMjIsMi45LTE5LjQ3LDMuODUtMjYuOTIsMTIuNzdjLTIuMDctMi45My00LjM1LTUuMi01LjQ3LTcuOTRjLTMuNzgtOS4yMS03LjM1LTE4LjUzLTEwLjU5LTI3Ljk0DQoJCWMtMS4zOS00LjA0LTIuMzUtOC4zOCwzLjUtMTAuNjJjNS4xMy0xLjk3LDcuODctMC43MSw2LjYyLDQuNTdjLTEuODUsNy44LDEuMzMsMTMuOTYsNC40OCwyMC4zOGMwLjIyLDAuNDUsMC4zNSwxLjAxLDAuNywxLjMxDQoJCWM0LjUyLDMuODQsOC4yMS0wLjU0LDEyLjE1LTEuNTFjMi4yOC0wLjU2LDYuMDctMSw0LjUyLTUuNDVDNjAuMTMsMzM0LjczLDU4LjgyLDMyNy4xOSw1MC4zNywzMjQuNzh6Ii8+DQoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTI1LjEzLDI5My42MWMxNS40OC0wLjksMjkuOTEtMS44OSw0NC4zNy0yLjVjNC45My0wLjIxLDcuODMtMi4zOSw3LjgtNy4wNWMtMC4wMi00LjAzLTAuODItOC4yMi0yLjIzLTExLjk5DQoJCWMtMC41OC0xLjU2LTMuNjMtMy4xNS01LjU0LTMuMTNjLTExLjgxLDAuMS0yMy42MywwLjUzLTM1LjQyLDEuMjFjLTEuNDksMC4wOS0yLjc3LDIuMzktNC4yOSwzLjQ2Yy0xLjQxLDAuOTktMy4xNiwyLjUzLTQuNDcsMi4yOQ0KCQljLTEuMTYtMC4yMi0yLjQ2LTIuNDYtMi43Ni0zLjk5Yy0wLjkzLTQuNzQtMS4zMS05LjU2LDEuOC0xNC4xOWM4LjI2LDUuNzUsMTcuMzcsMi44MSwyNi4xNiwyLjg0YzUuOTksMC4wMiwxMS45OC0wLjQ5LDE3Ljk2LTAuMzcNCgkJYzguNDEsMC4xNiwxMy44NCw0LjA0LDE1LjEzLDEyLjM4YzEuMDUsNi43NiwwLjczLDEzLjg5LTAuMDcsMjAuNzNjLTAuNjEsNS4xOS00LjM5LDguMzEtMTAuMDMsOC43NQ0KCQljLTEwLjc4LDAuODMtMjEuNTYsMS42OS0zMi4zMSwyLjg3Yy0zLjU0LDAuMzktNy4wNywxLjUzLTEwLjQyLDIuOGMtMy40NiwxLjMxLTUuNTcsMS4wMS01LjY4LTMuMTQNCgkJQzI1LjA1LDMwMC45NiwyNS4xMywyOTcuMzQsMjUuMTMsMjkzLjYxeiIvPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xMDguMTYsMTY2LjEzYy0xLjUxLTAuOTMtMi40Ni0xLjYtMy40Ny0yLjE0Yy04LjQtNC41My05Ljk3LTQuMTctMTUuMzMsMy40NQ0KCQljLTUuOTksOC41MS00LjM0LDEzLjQ0LDUuNjUsMTcuMDRjMS4yMywwLjQ0LDIuNDIsMS4wMSw0LjUyLDEuODljLTMuNyw1LjMzLTcuMTcsMTAuMzItMTAuNDYsMTUuMDYNCgkJYy0xLjUzLTAuNTktMS45NS0wLjYyLTIuMTEtMC44NEM3NS40MSwxODQuMjgsNjMuODQsMTY4LDUyLjQsMTUxLjYzYy0wLjk3LTEuMzktMi4wMS00LjI3LTEuMzktNC45Mw0KCQljMS4zNi0xLjQ2LDMuOTUtMi45Niw1LjcyLTIuNjVjMTIuNiwyLjIyLDI1LjEyLDQuOTYsMzcuNjksNy4zOGM0LjcyLDAuOTEsOS41NSwxLjI5LDE0LjI4LDIuMTZjNS45MiwxLjA4LDYuNTYsMi43LDMuMjUsNy41DQoJCUMxMTAuODMsMTYyLjcyLDEwOS41OCwxNjQuMjUsMTA4LjE2LDE2Ni4xM3ogTTc4Ljg4LDE1OC4xNGMtMy41Ny0wLjkxLTYuNTQtMS42Ny05LjUyLTIuNDNjLTAuMiwwLjMxLTAuMzksMC42Mi0wLjU5LDAuOTQNCgkJYzIsMi4yNCwzLjk5LDQuNDcsNi4xOCw2LjkzYzAuOTItMS4xLDEuNDctMS42OCwxLjk0LTIuMzNDNzcuNDYsMTYwLjQzLDc3Ljk2LDE1OS41OCw3OC44OCwxNTguMTR6Ii8+DQoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTUxMC4wNywzMjIuMjJjLTEuNyw2Ljg5LTMuNDEsMTMuNzgtNS4zOCwyMS43NWMtOS44Mi04LjY1LTE3LjYxLTAuMzQtMjYuMTQtMC4wMQ0KCQljNS4yNiw2LjA1LDkuNDIsMTIuNzcsMTcuNDMsMTUuMjdjMS4yNiwwLjM5LDIuNzMsMi4zOCwyLjg2LDMuNzZjMC41NCw1LjQxLTAuNzUsMTAuMTgtNS4zMiwxMi4zOQ0KCQljLTguMjYtOS4wNS0xNS42Mi0xOC4zNS0yNC4zMS0yNi4xOWMtNS44NS01LjI4LTEzLjQ0LTguNjEtMjEuOTYtNC4xMmMtNCwyLjEtNS44OSwwLjctNS4wNC0zLjY1YzEuMTEtNS43LDIuNTgtMTEuMzQsNC4zLTE2Ljg5DQoJCWMwLjQ1LTEuNDUsMi4yMS0yLjgyLDMuNy0zLjQ2YzAuNi0wLjI2LDIuMzQsMS4zNywzLjEyLDIuNDZjMS40NiwyLjA1LDIuMTYsNS42OSwzLjk0LDYuMjZjNS4yNywxLjY3LDEwLjk2LDMuMTUsMTYuMzksMi44Ng0KCQljNi43My0wLjM1LDEzLjQ5LTIuMTEsMTkuOTgtNC4wOGM1LjEyLTEuNTYsOS44NS00LjM4LDE0Ljc1LTYuNjNDNTA4Ljk2LDMyMi4wMSw1MDkuNTEsMzIyLjEyLDUxMC4wNywzMjIuMjJ6Ii8+DQoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTUwNy41NiwyODguMjljLTEzLjc2LTAuNDctMjcuNTItMS4wNC00MS4yOS0xLjI1Yy0xLjQ1LTAuMDItMi44OCwyLjE2LTQuNDEsMy4xOQ0KCQljLTEuNTUsMS4wNC0zLjQzLDIuOS00Ljc2LDIuNmMtMS4yNi0wLjI5LTIuNzgtMi44OC0yLjgxLTQuNDljLTAuMTItNS42MiwwLjIxLTExLjI2LDAuNy0xNi44N2MwLjE0LTEuNiwxLjM4LTMuMTEsMi41NC01LjU1DQoJCWM4LjIyLDEwLjA2LDE5LjI1LDcuMDksMjkuMTgsOC40MmM0LjYxLDAuNjIsOS4zLDEuNCwxMy45LDEuMTVjMi42LTAuMTUsNi4xMS0xLjY0LDcuMzItMy42NmMwLjk2LTEuNi0wLjQtNS4yNi0xLjc0LTcuMzgNCgkJYy0xLjE0LTEuODItMy42OS0yLjc0LTUuNjItNC4wNmMwLjI5LTAuNjgsMC41OC0xLjM2LDAuODctMi4wNGMyLjExLTEuMDcsNC4xMS0yLjU1LDYuMzQtMy4xMmM2LjM5LTEuNjMsOC42NSwwLjE0LDguMzksNi42Ng0KCQljLTAuNDgsMTIuNDgtMS4zMywyNC45NC0xLjc4LDM3LjQyYy0wLjE5LDUuMTYtMy4zNSw2LjUxLTcuNTEsNi41OWMtMS40NiwwLjAzLTMuNTQtMC43NC00LjIxLTEuODMNCgkJYy0wLjUyLTAuODQsMC41OS0yLjgzLDEuMjItNC4xOWMxLjUtMy4yMiwzLjE2LTYuMzcsNC43NS05LjU1QzUwOC4yOSwyODkuNjMsNTA3LjkyLDI4OC45Niw1MDcuNTYsMjg4LjI5eiIvPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xMzkuNDEsNDM1LjcxYy0yLjgxLTIuNjMtNS4yNS00Ljg4LTcuNjYtNy4xNWMtMi44OS0yLjcyLTEuNzMtNS4zOSwwLjE4LTcuOTljMS44My0yLjUsNC4wNy0zLjMzLDYuODQtMS4zNw0KCQljNC41MSwzLjE4LDguODMsMS41OCwxMy4xOS0wLjQ0YzUtMi4zMSw3LjQxLTEuMzQsMTEuOTEsMy40M2MzLjQ0LDMuNjQsMC42Miw2LjIxLTEuMTUsOC42OWMtOS44NiwxMy44My0xOS45NiwyNy40OS0yOS44Niw0MS4zDQoJCWMtMi40NywzLjQ1LTQuOTUsNC41NC04LjY5LDEuODNjLTUuNTMtNC4wMS02Ljc1LTYuNzctMy45LTEwLjk0QzEyNi40Nyw0NTQuMDIsMTMyLjg1LDQ0NS4wOCwxMzkuNDEsNDM1LjcxeiIvPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xNDcuNzEsNDcuOTJjNi41Mi0yLjI0LDEyLjUzLTQuMzEsMTguNDUtNi4zNGMwLjU1LDEuMjIsMC44NywxLjYsMC43OCwxLjc3DQoJCWMtMy43MSw2Ljg3LTEuMjcsMTMuMDcsMS43OSwxOS4zN2MyLjgzLDUuODIsNS4wOSwxMS45Myw3Ljg5LDE3Ljc3YzMuNTYsNy40Niw3LjMsOC44LDE0Ljg0LDUuNzdjOC42Ni0zLjQ4LDkuODgtNi4wNyw2LjYxLTE0Ljc1DQoJCWMtMi44MS03LjQ2LTUuNDYtMTUuMDEtOC43OS0yMi4yNGMtMi4yMi00LjgyLTUuNS05LjE2LTguNjItMTQuMjNjMi45MS0zLjc1LDcuNTQtNC4zOSwxMy4yNy0zLjhjLTIuMjksOC43LDIuNDEsMTUuNjEsNC44NSwyMy4wNg0KCQljMi4zMiw3LjEsNC44OSwxNC4xMyw2Ljc5LDIxLjM0YzIuMTgsOC4yOS0wLjQ1LDEyLjkzLTguMjksMTYuMTljLTAuNjEsMC4yNS0xLjIzLDAuNDktMS44NSwwLjc0DQoJCWMtMTUuMSw2LjE0LTI0Ljg4LDMuODUtMzAuNjgtMTMuMTljLTEuNS00LjQtMy41NC04LjYtNS4yNy0xMi45MmMtMi4xLTUuMjQtMy44Mi0xMC42Ni04LjkxLTE0LjA3DQoJCUMxNDkuNDYsNTEuNjQsMTQ4Ljk4LDQ5Ljk3LDE0Ny43MSw0Ny45MnoiLz4NCgk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMzE2LjgxLDI0LjExYzYuMjYsMS42MSwxMS4zOSwyLjgxLDE2LjQzLDQuMjdjMy4yOSwwLjk1LDMuNzMsMy42MywxLjc3LDUuODFjLTMuNDIsMy44MS0zLjA1LDguMi0zLjAyLDEyLjY2DQoJCWMwLjAzLDUuMzMtMC4xNiwxMC42NiwwLjA4LDE1Ljk4YzAuMTEsMi4zLDEuMDUsNC41NywxLjYxLDYuODVjMC41LDAuMTEsMSwwLjIyLDEuNSwwLjMyYzMuOS01LjEsNy44My0xMC4xOCwxMS42OC0xNS4zMQ0KCQljMy44Ny01LjE2LDguMjctMTAuMTEsNy4wNC0xNy41N2M2LjQxLTAuNjYsMTEuNTMsMC4zNiwxNS44NSw1LjUxYy0xMy4wMiw4LjMyLTE5LjUxLDIxLjY5LTI4LjY4LDMyLjc3DQoJCWMtMi4zMywyLjgyLTQuNDksNS44MS03LjA4LDguMzhjLTEuMjcsMS4yNy0zLjQ3LDIuNjMtNSwyLjM5Yy0yLjg2LTAuNDUtNS4zNC0xLjgzLTUuNjItNS43M2MtMC45MS0xMi4yNy0yLjA4LTI0LjUzLTMuNDEtMzYuNzYNCgkJQzMxOS4zLDM3LjY0LDMxOC4wNCwzMS42NiwzMTYuODEsMjQuMTF6Ii8+DQoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTUwNy40MiwyMDcuODdjMC40NCwwLjYsMi4wMiwxLjg5LDIuNDIsMy40OGMxLjU5LDYuMjYsMi45MywxMi42LDQuMDYsMTguOTZjMC4yMywxLjI5LTAuODQsMi44Mi0xLjMxLDQuMjMNCgkJYy0xLjM0LTAuNTctMy4xOC0wLjc2LTMuOTQtMS43N2MtMi4wNi0yLjc0LTQuMzUtMy42NS03Ljc0LTIuOThjLTExLjg4LDIuMzMtMjMuOCw0LjQ1LTM1LjcxLDYuNjVjLTMuMjEsMC41OS01LjI4LDEuOTQtNS42OSw1LjcNCgkJYy0wLjE5LDEuNzUtMi4yNywzLjI5LTMuNDksNC45M2MtMS4zMS0xLjU0LTMuMzQtMi45LTMuNzktNC42NmMtMS43Mi02LjczLTMuMjUtMTMuNTUtNC4xNC0yMC40MmMtMC4yOC0yLjExLDEuNy00LjUyLDIuNjQtNi44DQoJCWMxLjc3LDEuNDUsNC4xOSwyLjU2LDUuMTcsNC40MmMxLjY5LDMuMjEsMy42Myw0LjE0LDcuMTQsMy40N2MxMS43My0yLjIzLDIzLjYzLTMuNzMsMzUuMi02LjU4DQoJCUM1MDEuNTcsMjE1LjY4LDUwNC4wMSwyMTEuMjIsNTA3LjQyLDIwNy44N3oiLz4NCgk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMjk1LjUzLDc3Ljg1Yy02LjY2LTAuODEtMTIuMDktMS4yMy0xNy40My0yLjJjLTMuNTEtMC42NC00LjU3LTMuMzMtMS43Ny01LjdjNC4xLTMuNDgsNC4xOC04LjA5LDQuNjUtMTIuNjQNCgkJYzAuOTItOC45MywxLjgtMTcuODcsMi4zNS0yNi44M2MwLjEzLTIuMDgtMC44MS00LjQzLTEuODUtNi4zNGMtMi40LTQuNC0xLjYzLTYuMjksMy40NC02LjAxYzQuNDMsMC4yNCw4Ljg5LDEuMDgsMTMuMTgsMi4yNQ0KCQljMy42NSwwLjk5LDQuMyw0LjE5LDEuMTcsNi4yNGMtMy4zMiwyLjE4LTMuODIsNS4xOS00LjIzLDguNDhjLTEuMDMsOC4yNS0yLjMxLDE2LjQ4LTIuODYsMjQuNzZjLTAuMjUsMy43OSwwLjkyLDcuNjgsMS41OCwxMS41MQ0KCQlDMjk0LjA4LDczLjExLDI5NC42OSw3NC44LDI5NS41Myw3Ny44NXoiLz4NCgk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMjMzLjksMzQwLjczYy0zMi44NiwxLjIzLTY1LjI4LTAuNDYtOTcuMDUsNi45NmMtMy45OSwwLjkzLTcuMTctMC4wNS04LjY2LTMuOA0KCQljLTIuMDEtNS4wNy0zLjU5LTEwLjMyLTQuOTQtMTUuNmMtMC4yNC0wLjk2LDEuMy0zLjIxLDIuNDEtMy41NGM2LjAxLTEuNzksMTIuMDctNC4wMSwxOC4yNC00LjUxYzE4LjktMS41MywzNy44NS0yLjU3LDU2LjgtMy4zNQ0KCQljMTEuMjYtMC40NiwyMi41Ni0wLjA5LDM0LjM4LTAuMDljMC41NS0zMi4xNCwzLjI5LTYyLjg1LDE3LjE5LTkxLjUyYy0wLjY3LTAuMy0xLjMzLTAuNi0yLTAuOWMtMS44NywyLjE0LTQuMjQsNC4wMi01LjUxLDYuNDYNCgkJYy01LjM4LDEwLjMtMTAuODMsMjAuNjEtMTUuNDEsMzEuMjhjLTEuOSw0LjQzLTEuNzgsOS43Ni0yLjM1LDE0LjcxYy0yLjQ0LDIxLjI3LTEyLjQ5LDMyLjc4LTMzLjY1LDM2LjA1DQoJCWMtMTEuNDQsMS43Ny0yMy4yNiwyLjM5LTM0LjgxLDEuNzRjLTE4LjE5LTEuMDMtMzQuMzQtMTcuNTMtMzcuMTItMzcuMDZjLTMuMTEtMjEuODItMi4yMy00My40Nyw0LjUxLTY0LjY5DQoJCWMxLjctNS4zNCw0LjQ0LTkuNSw5LjQyLTEyLjNjMjQuNzgtMTMuOTMsNTAuMS0xNC4wMyw3NS43My0yLjg0YzcuNjMsMy4zMyw5LjI4LDEwLjgsMTAuNzksMTguMDdjMC4zNiwxLjc2LDAuNTYsMy41NSwwLjc3LDQuOTYNCgkJYzkuNTMtMTIuMiwxOS4wNS0yNC4zNiwyOC42Ny0zNi42N2MtMS43Ni0zLjI2LTMuNzYtMi43My02LjE5LTAuNTljLTYuMDksNS4zNS0xMi44NSw5LjM3LTIwLjk5LDEwLjkxDQoJCWMtNS4wOCwwLjk2LTguNzktMC43Ni0xMS41OS00Ljg1Yy0yLjc4LTQuMDUtMS4yOC03LjU1LDEuNTctMTAuODNjNi4yMy03LjE3LDEyLjMyLTE0LjQ1LDE4LjctMjEuNDgNCgkJYzkuMDQtOS45OCwxMy4xOC0yMi4xMSwxNi4zNi0zNC44NGMwLjc5LTMuMTgsMi43Ni02LjUsNS4xMy04Ljc1YzQuNDQtNC4yMSwxMi4zNC00LjksMTYuNzUtMS44MWM1LjIsMy42NCw3LjczLDguOTcsNi4yMywxNS4yMQ0KCQljLTEuODIsNy41Ny00LjQ5LDE0LjkyLTYuNjYsMjIuNDFjLTAuNzMsMi41MS0xLjcxLDUuMjMtMS4zOSw3LjdjMC43LDUuMzQsNC4wMiw3LjIyLDEwLjU3LDYuNzhjMjcuNTctMS44OCw1NS4xMy0zLjk0LDgyLjcyLTUuNTYNCgkJYzYuOTQtMC40MSwxMy45OSwwLjIsMjAuOTIsMC45NWM4LjAzLDAuODcsMTQuMDUsNy45NiwxMy42OSwxNS4yNmMtMC4yOSw1Ljk2LTMuOSw5Ljg1LTkuODQsOS41NA0KCQljLTExLjk2LTAuNjItMjMuOS0yLjM2LTM1Ljg1LTIuNDNjLTE4LjExLTAuMTEtMzYuMjcsMC4yNC01NC4zMywxLjU4Yy03LjA2LDAuNTItMTQuMDksMy43OC0yMC43Nyw2LjY0DQoJCWMtNy4yMSwzLjEtOC41Nyw3LjE5LTYuMjksMTQuNTNjMC4zLDAuOTUsMC41MSwxLjk4LDEuMDEsMi44MWM2LjE3LDEwLjE3LDQuOTMsMjAuMjksMS4wMiwzMS4wNA0KCQljLTExLjI3LDMxLjAzLTEzLjAyLDYzLjM0LTExLjU1LDk1Ljk4YzAuODEsMTguMTMsMS40NSwzNi4yNywyLjQ2LDU0LjM4YzAuNDEsNy4zLDEuNjksMTQuNTQsMi40NiwyMS44Mg0KCQljMC4yOSwyLjgsMC42MSw1LjY5LDAuMjcsOC40NWMtMC41NSw0LjM2LTEuNzEsOC42Ny02Ljg0LDkuOTdjLTYuMTcsMS41Ni0xMS4zNSwwLjI2LTE0LjA0LTQuNzJjLTIuNTYtNC43My00LjYzLTEwLjAxLTUuNi0xNS4yOA0KCQljLTMuODMtMjAuODQtNS4zOC00MS45MS01LjE1LTYzLjExQzIzNC4xMywzNDQuMzQsMjMzLjk5LDM0Mi44OCwyMzMuOSwzNDAuNzN6IE0yMDIuOTgsMjQyLjkxYzAtNC4xMywwLjI2LTcuNDctMC4wNS0xMC43Ng0KCQljLTEuMDItMTEuMDEtNS42NS0xNS43LTE2LjU1LTE2Ljk0Yy0zLjQ3LTAuMzktNi45OC0wLjQ5LTEwLjQ3LTAuNzJjLTIxLjE3LTEuMzktMzMuMzMsOS45OC0zMi4xNCwzMS4wMg0KCQlDMTYzLjMsMjQ0LjY1LDE4Mi44NCwyNDMuOCwyMDIuOTgsMjQyLjkxeiBNMTQ2LjEzLDI2Ny40M2MtMC42NCwxMi4wMiw2LDIxLjU5LDE3LjE0LDIzLjU4YzYuNiwxLjE4LDEzLjUsMS4yMiwyMC4yNCwwLjk4DQoJCWMxNC41Ni0wLjUyLDIzLjIyLTEyLjIzLDIwLjA5LTI2Ljk5QzE4NC4yMywyNjAuNjQsMTY1LjIsMjY0Ljk0LDE0Ni4xMywyNjcuNDN6Ii8+DQoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTMzOS4yMSwzMDUuNWM4LjM3LTAuNywxNS41NC0wLjg5LDIyLjU1LTIuMDhjMi44LTAuNDcsNS40NC0yLjg3LDcuNzYtNC44NmMyLjM4LTIuMDMsNC4wMy00LjkzLDYuNDYtNi44OQ0KCQljMy4yNS0yLjYzLDYuOS00Ljg5LDExLjM5LTIuNDJjMy45NiwyLjE4LDcuMzQsNy43MSw2LjA5LDEyLjI0Yy00LjU1LDE2LjQ5LTkuNDMsMzIuODktMTQuNjUsNDkuMTgNCgkJYy0wLjUyLDEuNjMtNC4xOSwzLjA2LTYuNDcsMy4xNmMtNy42MywwLjM2LTE1LjMtMC4wMy0yMi45NCwwLjA3Yy03Ljg0LDAuMS04LjEzLDAuNTEtNi4zOSw3Ljk3YzIuNDMsMTAuMzUsNS4yMiwyMC42Myw3LjM0LDMxLjA0DQoJCWMwLjg4LDQuMzIsMC42NSw4LjkyLDAuNTEsMTMuMzhjLTAuMTIsMy43Ni0yLjU2LDUuNi02LjI4LDUuNjRjLTYuNzMsMC4wNi0xMS4yMS0zLjUxLTE0LjQ4LTkuMDINCgkJYy02LjM4LTEwLjc1LTkuNDYtMjIuNjQtMTEuOTUtMzQuNzNjLTIuMTQtMTAuNDEtMy4xMi0xMS4wOS0xMy4yOS03LjUzYy00LjM3LDEuNTMtOC40NywzLjgyLTEyLjc0LDUuNjYNCgkJYy0zLjM1LDEuNDUtNi43LDIuOTctMTAuMTcsNC4wNmMtNi4wMiwxLjg4LTkuNzEsMC42MS0xMi4xMS0zLjcyYy0yLjgyLTUuMDgtMi4zNi0xMS4xNSwyLjA1LTE0LjU1YzMuMzQtMi41Nyw3LjM3LTQuNTcsMTEuNC01Ljg1DQoJCWM5LjkyLTMuMTYsMjAuMDItNS43NiwzMC4yMS04LjYzYzAtMy43OCwwLTguMTUsMC0xMy45MmMtNi41LDEuNzktMTIuMiwzLjIzLTE3LjgyLDQuOTVjLTUuODcsMS44LTExLjYxLDQuMDMtMTcuNDksNS43OQ0KCQljLTQuMjEsMS4yNi04LjMxLDEuNDktMTAuNDUtMy42OWMtMi4xNi01LjI0LTAuOC0xMC45OCwzLjQ5LTEzLjc1YzcuNzctNS4wMiwxNi43NC00LjkxLDI1LjQ3LTUuOTYNCgkJYzUuNTgtMC42NywxMS4xMy0xLjc2LDE2LjYyLTMuMDFjMS4xNS0wLjI2LDEuOTUtMi4wNiwyLjkxLTMuMTVjLTEuMzUtMC41OC0yLjcxLTEuNjctNC4wNi0xLjY2Yy00Ljk4LDAuMDUtOS45NywwLjc2LTE0Ljk0LDAuNjQNCgkJYy00LjE0LTAuMS04LjAxLTEuNDktOS4wNy02LjI3Yy0xLjE5LTUuMzMsMS45Mi05LjA1LDguMDItOS40MWMxNC43OC0wLjg4LDI5LjU4LTEuNjEsNDQuMzctMi4zOWMwLjY2LTAuMDQsMS4zNC0wLjA5LDIsMA0KCQljMi4yNywwLjMyLDQuNTMsMC43LDYuOCwxLjA2Yy0wLjQ3LDIuNjktMC4yNyw1Ljc3LTEuNTYsNy45OEMzNDUuNzIsMjk4LjMzLDM0Mi42OCwzMDEuMjcsMzM5LjIxLDMwNS41eiBNMzM5LjIxLDMzNi44Mg0KCQljNi4zNS0wLjU1LDEyLjE4LTAuNzcsMTcuODgtMS43NGMxLjc5LTAuMzEsNC4wMS0yLjM4LDQuNjUtNC4xNGMxLjA3LTIuOTYsMS4wMy02LjMzLDEuNTktMTAuNTNjLTguNjksMC44Mi0xNi4zNywxLjU1LTI0LjEyLDIuMjkNCgkJQzMzOS4yMSwzMjcuNjQsMzM5LjIxLDMzMS45MiwzMzkuMjEsMzM2LjgyeiIvPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0zMjkuOTksMjgyLjg0Yy0xMC40NywwLTIwLjk1LTAuMi0zMS40MiwwLjA2Yy05LjMzLDAuMjQtMTUuNzktMy4yNy0xOS43NC0xMS40Nw0KCQljLTQuMy04LjkzLTMuMDctMTYuMjQsMy0yMy40N2M2LjE1LTcuMzIsMTQuMjktOS4zOSwyMy4xMi05LjhjMTguNjEtMC44NSwzNy4yMy0xLjg2LDU1Ljg0LTEuOThjOC45MS0wLjA2LDE3Ljg1LDEuNTYsMjYuNzMsMi44Mg0KCQljMi4yOCwwLjMyLDQuODUsMS42OSw2LjQyLDMuMzhjNi40Myw2Ljk0LDcuOSwxNS40LDQuOTgsMjQuMTJjLTIuNzksOC4zMi05LjMzLDEyLjg3LTE4LjEsMTMuMzkNCgkJYy0xNi45MywxLjAyLTMzLjg3LDEuNzQtNTAuODEsMi41OEMzMzAuMDEsMjgyLjYxLDMzMCwyODIuNzMsMzI5Ljk5LDI4Mi44NHogTTM3Ni42NSwyNTljLTAuMi0wLjYzLTAuNDEtMS4yNi0wLjYxLTEuOQ0KCQljLTMuODktMC4zNy03Ljc5LTEuMTUtMTEuNjctMS4wNWMtMTkuOTYsMC41Mi0zOS45MSwxLjE3LTU5Ljg2LDIuMDRjLTMuMSwwLjEzLTguNDYtMS4wMi04LjMxLDMuNzljMC4xNSw1LjAyLDUuNjgsMy44NSw4Ljg3LDMuNzENCgkJYzIxLjc3LTAuOTgsNDMuNTItMi4yNyw2NS4yNi0zLjdDMzcyLjQ4LDI2MS43NSwzNzQuNTQsMjYwLjAxLDM3Ni42NSwyNTl6Ii8+DQoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTMzMi44OSwyMzIuNjZjLTE0LjI4LTAuNTUtMjguNTctMC44OS00Mi44Mi0xLjgxYy0yLjgxLTAuMTgtNi4xMy0xLjk4LTguMDktNC4wOA0KCQljLTguMjItOC44LTYuMjgtMjUuNDgsNC4xMy0zMS4zNmM1LjI4LTIuOTgsMTEuODEtNC43MywxNy44OS01LjEyYzE4LjktMS4yMSwzNy44Ni0xLjY0LDU2LjgxLTIuMDljOC44Ni0wLjIxLDE3LjU1LDEuMTQsMjUuNyw1DQoJCWM2Ljg2LDMuMjUsMTAuMjgsOC42LDEwLjQ2LDE2LjE2YzAuMTksNy45Mi0xLjkxLDE0Ljg4LTkuOTYsMTcuNzVjLTYuMzMsMi4yNS0xMy4wNCw0LjE4LTE5LjY5LDQuNjENCgkJYy0xMS40MywwLjc0LTIyLjk0LDAuMjEtMzQuNDIsMC4yMUMzMzIuOTEsMjMyLjE2LDMzMi45LDIzMi40MSwzMzIuODksMjMyLjY2eiBNMzc1Ljc2LDIxMy42MWMtMC41MS01Ljk2LTIuNy03LjgtNy4zMS03LjY5DQoJCWMtMTMuMTMsMC4yOS0yNi4yOCwwLjA4LTM5LjQxLDAuMzVjLTkuMTMsMC4xOS0xOC4yNSwwLjcyLTI3LjM2LDEuMzRjLTMuMzIsMC4yMy02LjE4LDIuMy01LjE1LDUuNzgNCgkJYzAuNDcsMS41OSwzLjk1LDMuMjQsNi4wNywzLjIzYzE4LjI4LTAuMDUsMzYuNTYtMC4zMiw1NC44My0wLjg3QzM2My40NiwyMTUuNTgsMzY5LjQ1LDIxNC4zOCwzNzUuNzYsMjEzLjYxeiIvPg0KPC9nPg0KPC9zdmc+DQo=" alt="Fudan University" class="lg-fd"></a>
+    </div>
+    <div class="lang" role="group" aria-label="Language"><button data-lang="zh" aria-pressed="true">中</button><button data-lang="en" aria-pressed="false">EN</button></div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="marquee" aria-hidden="true" id="marquee"></div>
+  <div class="wrap">
+    <div class="inner">
+      <a class="pill" href="https://gulucaptain.github.io/Best-Paper-Writing-Skill/" target="_blank" rel="noopener"><span class="dot"></span><span class="zh">Best-Paper 系列 · 写作用 Writing，审稿用 Review →</span><span class="en">Best-Paper series · write with Writing, review with Review →</span></a>
+      <h1>Best-Paper-<span class="shine">Review-Skill</span></h1>
+      <p class="tagline"><span class="zh">让 AI 像最好的审稿人一样审</span><span class="en">Let AI review like the best reviewer: </span><span class="zh">：</span><span class="typed" id="typed"></span></p>
+      <p class="sub zh">给它一篇论文 PDF，得到一份能逐条核对的审稿：每条意见都有原文页码证据，每个贡献并行查新，独立子代理复核，分数只由核心主张是否成立决定。</p>
+      <p class="sub en">Give it a paper PDF and get a review you can check line by line: every comment carries a page-verified quote, each contribution gets its own novelty search, a fresh-context critic re-reads the paper, and the score follows whether the core claims hold.</p>
+      <div class="cta">
+        <a class="btn primary" href="#install"><span class="zh">立即安装</span><span class="en">Get started</span></a>
+        <a class="btn" href="#bench"><span class="zh">看 92 篇盲测 ↓</span><span class="en">92-paper benchmark ↓</span></a>
+        <a class="btn gh" href="https://github.com/gulucaptain/Best-Paper-Review-Skill" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub ★</a>
+      </div>
+      <div class="proof">
+        <div class="pf"><div class="pi">📌</div><div><b><span class="zh">每条意见带页码证据</span><span class="en">Page-checked evidence</span></b><span class="zh">引文只来自脚本快照</span><span class="en">quotes from script snapshots only</span></div></div>
+        <a class="pf" href="#inject"><div class="pi">🧪</div><div><b><span class="zh">植入缺陷 <i data-count="6">0</i>/6 检出</span><span class="en"><i data-count="6">0</i>/6 injected flaws found</span></b><span class="zh">合成论文与 VGGT 改写稿</span><span class="en">synthetic paper &amp; modified VGGT</span></div></a>
+        <a class="pf" href="#bench"><div class="pi">📊</div><div><b><span class="zh"><i data-count="92">0</i> 篇接收/拒绝盲测</span><span class="en"><i data-count="92">0</i>-paper blind test</span></b><span>Claude · GPT-Astra · GPT-Sol</span></div></a>
+        <a class="pf" href="#install"><div class="pi">⚡</div><div><b><span class="zh">两行命令安装</span><span class="en">Two-line install</span></b><span>Claude · Codex</span></div></a>
+      </div>
+    </div>
+
+    <div class="rdwrap rv" id="video">
+      <div class="vid" id="vid">
+        <video id="vplayer" preload="metadata" playsinline poster="assets/intro_poster.jpg?v=2" src="assets/intro_zh.mp4"></video>
+        <button class="play" id="vplay" aria-label="Play video"><span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span><em class="zh">▶ 1 分钟看懂 Best-Paper-Review-Skill</em><em class="en">▶ The skill in 1 minute (Chinese voice-over)</em></button>
+      </div>
+    </div>
+    <p class="rdcap"><span class="zh">想看真实输出？</span><span class="en">Want to see real output?</span> <a href="docs/demo-viewer.html" target="_blank" rel="noopener"><span class="zh">打开完整阅读器 Demo ↗</span><span class="en">Open the full reader demo ↗</span></a></p>
+  </div>
+</header>
+
+<section id="why">
+  <div class="wrap">
+    <div class="center rv">
+      <div class="eyebrow">Why it works</div>
+      <h2><span class="zh">不是一句“帮我审一下这篇论文”</span><span class="en">Not a "please review this paper" prompt</span></h2>
+      <p class="lead zh">通用 AI 审稿常见的毛病：编造引文和页码、把附录里已有的实验说成“缺失”、拿截止日之后的工作批评创新性、使用者一表态就跟着改分。我们把每一种都变成了脚本能检查的规则。</p>
+      <p class="lead en">Generic AI reviews invent quotes and page numbers, call appendix experiments "missing", judge novelty against work published after the deadline, and shift the score when the user leans. Each of these is now a rule a script can check.</p>
+    </div>
+    <div class="feat">
+      <div class="fc c1 rv"><span class="no">01</span>
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="m9 14 2 2 4-4"/></svg></div>
+        <h3><span class="zh">证据可校验</span><span class="en">Verifiable evidence</span></h3>
+        <p class="zh">引文只能来自脚本生成的 PDF 快照，校验原文与所在页码；前作日期按 arXiv 版本历史核对；数值批评由脚本复算。</p><p class="en">Quotes come only from script-made PDF snapshots and are checked by text and page; prior-work dates are checked against arXiv history; numeric claims are recomputed.</p>
+        <div class="demo"><div class="code">find_quote "less than a second"<br><b>✓ paper · p.1</b> · 85.3−78.9 = <b>+6.4</b></div></div>
+      </div>
+      <div class="fc c2 rv"><span class="no">02</span>
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/><path d="M8.5 11h5M11 8.5v5"/></svg></div>
+        <h3><span class="zh">逐贡献并行查新</span><span class="en">Per-contribution novelty</span></h3>
+        <p class="zh">把论文拆成原子贡献 C1…Cn，每个贡献派一个子代理检索并读前作原文，截止日之后的工作不算。</p><p class="en">The paper is split into atomic contributions C1…Cn; each gets a sub-agent that searches and reads the closest prior work. Anything after the cutoff does not count.</p>
+        <div class="demo"><span class="t">C1 → agent</span><span class="t">C2 → agent</span><span class="t">C3 → agent</span><span class="t dim">arXiv · OpenAlex · S2 · DBLP</span></div>
+      </div>
+      <div class="fc c3 rv"><span class="no">03</span>
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z"/><path d="M9 12h6"/></svg></div>
+        <h3><span class="zh">反证与独立复核</span><span class="en">Counter-evidence &amp; critic</span></h3>
+        <p class="zh">每条批评先写出作者最有力的辩护；撤销的候选单独列出。写完后，新上下文的复核子代理逐条重读原文。</p><p class="en">Every criticism first states the authors' best defense; withdrawn candidates are listed. Then a fresh-context critic re-reads the paper comment by comment.</p>
+        <div class="demo"><div class="chk"><span><i>✓</i><span class="zh">附录已有方差 → 撤销</span><span class="en">Variance in appendix → withdrawn</span></span><span><i>✓</i><span class="zh">“未报告”≠“没做”</span><span class="en">“Not reported” ≠ “not done”</span></span><span><i>✓</i><span class="zh">复核意见逐条处理</span><span class="en">Every critic note resolved</span></span></div></div>
+      </div>
+      <div class="fc c4 rv"><span class="no">04</span>
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M5 7h14"/><path d="m5 7-3 6a3 3 0 0 0 6 0z"/><path d="m19 7-3 6a3 3 0 0 0 6 0z"/></svg></div>
+        <h3><span class="zh">中立、防篡改</span><span class="en">Neutral &amp; tamper-evident</span></h3>
+        <p class="zh">“希望被拒”“给 2 分”只记录、不执行；出分前做对称自检；规则文件有指纹，被改过的规则一眼可见。</p><p class="en">"Reject it" or "give it a 2" is recorded, never obeyed; a symmetric self-check runs before scoring; rule files are fingerprinted, so modified rules show.</p>
+        <div class="demo"><div class="code">rules_sha256<br><b>a4465b78…</b> · <span class="zh">官方规则</span><span class="en">official</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="case" class="alt">
+  <div class="wrap">
+    <div class="rv">
+      <div class="award"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg><span class="zh">案例 · CVPR 2025 最佳论文</span><span class="en">Case study · CVPR 2025 Best Paper</span></div>
+      <div class="eyebrow">Real run · VGGT</div>
+      <h2><span class="zh">一篇最佳论文，为什么只给 4 分？</span><span class="en">A Best Paper, and the skill gives it a 4</span></h2>
+      <p class="lead wide zh">VGGT 获得了 CVPR 2025 最佳论文，我们用它做了一次盲审测试：Skill 不知道作者，不知道获奖，也不查公开评审，只依据稿件本身下判断。它的结论是<b>应当接收，贡献重要性评为最高一档</b>；但“可处理上百张视图”和关键消融这两条核心主张的证据还不完整，所以给出 <b>4/6 弱接收</b>，并写明补上哪些实验就能升到 5 分。下方嵌入的是这次审稿的原始输出：左边是论文，右边是逐条意见，每一条都能跳回原文核对。</p>
+      <p class="lead wide en">VGGT won Best Paper at CVPR 2025, so we used it as a blind test: the skill saw no authors, no award and no public reviews, only the manuscript. Its verdict is <b>accept, with significance at the top level</b>; but the evidence for two core claims, handling hundreds of views and the key ablations, is incomplete, so it scores <b>4/6, Weak Accept</b> and states which experiments would raise it to 5. Embedded below is the raw output of that run: the paper on the left, comments on the right, each one linked back to the source text.</p>
+    </div>
+    <div class="ladder rv" aria-label="1-6 score scale">
+      <div><b>1</b><span class="zh">强烈拒绝</span><span class="en">Strong Reject</span></div>
+      <div><b>2</b><span class="zh">拒绝</span><span class="en">Reject</span></div>
+      <div><b>3</b><span class="zh">弱拒绝</span><span class="en">Weak Reject</span></div>
+      <div class="acc on"><b>4</b><span class="zh">弱接收 · VGGT</span><span class="en">Weak Accept · VGGT</span></div>
+      <div class="acc"><b>5</b><span class="zh">接收</span><span class="en">Accept</span></div>
+      <div class="acc"><b>6</b><span class="zh">强烈接收</span><span class="en">Strong Accept</span></div>
+      <span class="line" aria-hidden="true"></span>
+    </div>
+    <p class="ladcap rv zh">Skill 对所有会议统一使用 1–6 分：<b>3 分及以下倾向拒绝，4 分及以上倾向接收</b>，虚线为接收线。4 分是接收区间的第一档，5、6 分要求核心主张的证据完整。</p>
+    <p class="ladcap rv en">The skill uses one 1–6 scale for every venue: <b>3 or below leans reject, 4 or above leans accept</b>; the dashed line is the accept line. 4 is the first accept level; 5 and 6 require complete evidence for the core claims.</p>
+    <div class="embed rv">
+      <div class="bar" role="tablist">
+        <button role="tab" aria-selected="true" data-src="docs/vggt-case/review-viewer.html?embed=1"><span class="zh">PDF 阅读器</span><span class="en">PDF reader</span></button>
+        <button role="tab" aria-selected="false" data-src="docs/vggt-case/comments_submission.html"><span class="zh">英文提交稿</span><span class="en">English draft</span></button>
+        <a id="caseopen" href="docs/vggt-case/review-viewer.html" target="_blank" rel="noopener"><span class="zh">新窗口打开 ↗</span><span class="en">Open in new tab ↗</span></a>
+      </div>
+      <iframe id="caseframe" data-src="docs/vggt-case/review-viewer.html?embed=1" loading="lazy" title="VGGT review"></iframe>
+      <div class="mob"><span class="zh">阅读器需要较宽的屏幕，请点上方“新窗口打开”。</span><span class="en">The reader needs a wider screen; use "Open in new tab" above.</span></div>
+    </div>
+    <div class="why3">
+      <div class="w ok rv"><div class="k"><span class="zh">判断对了</span><span class="en">THE CALL IS RIGHT</span></div>
+        <h3><span class="zh">该收，而且重要</span><span class="en">Accept, and important</span></h3>
+        <p class="zh">4 分在接收线以上。三条核心主张都成立，没有任何切断证据链的问题，<b>重要性判为最高一档</b>。</p>
+        <p class="en">4 is above the accept line. All three core claims hold, nothing breaks the evidence chain, and <b>significance is rated at the top level</b>.</p></div>
+      <div class="w rv"><div class="k"><span class="zh">为什么不是 5–6</span><span class="en">WHY NOT 5–6</span></div>
+        <h3><span class="zh">重要性不能替代证据</span><span class="en">Importance doesn't replace evidence</span></h3>
+        <p class="zh">“上百张视图”的精度只测到 <b>10 帧</b>；关键消融只在 <b>ETH3D 一种指标</b>上做过。按规则，有未补的证据时分数封顶 4。两项都能在答辩中补齐，补上即升到 5。</p>
+        <p class="en">"Hundreds of views" is measured only up to <b>10 frames</b>; key ablations use <b>one metric on ETH3D</b>. By rule, open evidence gaps cap the score at 4. Both are rebuttal-sized; closing them lifts it to 5.</p></div>
+      <div class="w rv"><div class="k"><span class="zh">两件不同的事</span><span class="en">DIFFERENT QUESTIONS</span></div>
+        <h3><span class="zh">审稿分数 ≠ 奖项</span><span class="en">Review score ≠ award</span></h3>
+        <p class="zh">Skill 回答“稿件上的证据是否撑得起每条主张”，只有一轮盲审；奖项评的是工作的影响，还能看到答辩与终稿。Skill 有意不预测奖项。</p>
+        <p class="en">The skill asks whether the page supports each claim, in one blind round; an award weighs impact, after rebuttal and the final version. The skill deliberately does not predict awards.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="wrap">
+    <div class="rv">
+      <div class="eyebrow">Plain AI vs the skill</div>
+      <h2><span class="zh">同一篇论文，两种审法</span><span class="en">Same paper, two ways to review it</span></h2>
+      <p class="lead zh">科学判断仍由加载 Skill 的模型完成；脚本负责抽取、检索、溯源和确定性检查。<b>脚本校验通过只说明记录自洽、引文真实存在，不说明结论正确。</b></p>
+      <p class="lead en">The model that loads the skill still makes the scientific judgment; scripts handle extraction, search, provenance and deterministic checks. <b>Passing the checks means the record is consistent and the quotes exist, not that the conclusions are right.</b></p>
+    </div>
+    <div class="cmp rv" id="cmp"></div>
+  </div>
+</section>
+
+<section id="pipeline" class="alt">
+  <div class="wrap">
+    <div class="center rv">
+      <div class="eyebrow">Pipeline</div>
+      <h2><span class="zh">从 PDF 到可提交的审稿，七步走完</span><span class="en">From PDF to a submittable review in seven steps</span></h2>
+      <p class="lead zh">给它一篇论文，它按七步走完审稿。点击每一步看它做什么。</p>
+      <p class="lead en">Give it a paper and it works through seven steps. Click a step to see what it does.</p>
+    </div>
+    <div class="flowbox rv">
+      <div class="flow" id="flow" role="tablist"></div>
+      <div class="stepd" id="stepd"></div>
+    </div>
+    <div class="dims rv" id="dims"></div>
+  </div>
+</section>
+
+<section id="inject">
+  <div class="wrap">
+    <div class="rv">
+      <div class="eyebrow">Known-answer benchmark</div>
+      <h2><span class="zh">带标准答案的审稿语料，让找问题的能力可量化</span><span class="en">A corpus with known answers makes reviewing measurable</span></h2>
+      <p class="lead flead zh wide">我们以真实 CS 论文为基础，在不同章节植入已知问题（测试集泄漏、按测试集选参、评测对齐、前后矛盾等，多数藏在附录细节里），构建大量带标准答案的审稿语料，用来学习与检验审稿能力。答案不给审稿代理看，审完后逐条对照。下面是其中一例。</p>
+      <p class="lead flead en wide">Starting from real CS papers, we plant known issues across sections (test-set leakage, tuning on the test set, evaluation alignment, internal contradictions, mostly in appendix details), building a large corpus with known answers to learn from and to measure the reviewer. The answers stay hidden from the agent and are matched comment by comment afterwards. One example below.</p>
+    </div>
+    <div class="inj">
+      <div class="ibox rv">
+        <h3><span class="zh">示例 · <a href="https://arxiv.org/abs/2503.11651" target="_blank" rel="noopener">VGGT</a> 改写稿中的 6 个已知问题</span><span class="en">Example · six known issues in a modified <a href="https://arxiv.org/abs/2503.11651" target="_blank" rel="noopener">VGGT</a></span></h3>
+        <p class="sm"><span class="zh">左：已知问题；右：审稿中对应的意见编号</span><span class="en">Left: known issue; right: the review comment that caught it</span></p>
+        <div class="map" id="map"></div>
+      </div>
+      <div class="ibox rv">
+        <h3><span class="zh">合成论文 · 新代理盲审</span><span class="en">Synthetic paper · blind run by a fresh agent</span></h3>
+        <p class="sm"><span class="zh">一个没见过标准答案的新代理按 Skill 审一篇自行生成的论文</span><span class="en">A fresh agent with no answer key reviews a self-generated paper using the skill</span></p>
+        <div class="big"><b data-count="6">0</b><span>/ 6 <span class="zh">植入缺陷检出，含一处提示注入</span><span class="en">planted flaws found, including a prompt injection</span></span></div>
+        <ul class="ilist">
+          <li><i>✓</i><span class="zh">提示注入被扫描并标记，没有被执行</span><span class="en">The prompt injection was flagged by the scanner, not obeyed</span></li>
+          <li><i>✓</i><span class="zh">另外提出一条未植入、但合理的问题</span><span class="en">It also raised one reasonable issue that was not planted</span></li>
+          <li><i>✓</i><span class="zh">它反馈的 11 条使用问题已全部修进 Skill</span><span class="en">All 11 usability issues it reported have been fixed in the skill</span></li>
+          <li><i>✓</i><span class="zh"><a href="https://arxiv.org/abs/2503.11651" target="_blank" rel="noopener">VGGT</a> 改写稿上 6/6 完整检出，均作为实质意见报告</span><span class="en">On modified <a href="https://arxiv.org/abs/2503.11651" target="_blank" rel="noopener">VGGT</a>, 6/6 were caught as substantive comments</span></li>
+        </ul>
+        <p class="fine zh">这是冒烟测试，不是真实审稿准确率。真实论文上的接收/拒绝预测见下方 92 篇盲测。</p>
+        <p class="fine en">These are smoke tests, not real-world accuracy. For accept/reject prediction on real papers, see the 92-paper benchmark below.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="bench" class="alt">
+  <div class="wrap">
+    <div class="center rv">
+      <div class="eyebrow">Benchmark</div>
+      <h2><span class="zh">同一套 Skill，每个 Agent 都更准</span><span class="en">One skill, every agent gets more accurate</span></h2>
+      <p class="lead zh" style="max-width:940px">评估 Benchmark 包括 92 篇真实投稿（46 篇接收、46 篇拒绝），真实结果不给 Claude / Codex 看。<br>相比 Skill v1.4.0，v1.5.1 让三个 Agent 的接收/拒绝判断准确率都提升了 17.4 个百分点，最高达 73.9%。</p>
+      <p class="lead en" style="max-width:940px">The benchmark has 92 real submissions (46 accepted, 46 rejected); outcomes are hidden from Claude / Codex.<br>Compared with Skill v1.4.0, v1.5.1 raises accept/reject accuracy by 17.4 points on all three agents, up to 73.9%.</p>
+    </div>
+    <div class="bpanel rv">
+      <div class="bttl"><b>Benchmark</b><span>92 papers · 46 accept / 46 reject · blind · Nov 2026</span></div>
+      <div class="bgrid">
+        <div class="bc wide">
+          <h3><span class="zh">接收/拒绝判断准确率</span><span class="en">Accept/reject accuracy</span></h3>
+          <div class="sx"><svg id="chAcc" viewBox="0 0 1040 262" role="img" aria-label="accuracy chart"></svg></div>
+          <div class="legend"><span><i style="background:var(--c-gray)"></i>Skill v1.4.0</span><span><i style="background:var(--c-acc)"></i>Skill v1.5.1</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="score">
+  <div class="wrap">
+    <div class="rv">
+      <div class="eyebrow">Scoring · v1.5.1</div>
+      <h2><span class="zh">问题多少不决定分数，核心主张才决定</span><span class="en">The core claims set the score, not the issue count</span></h2>
+      <p class="lead flead zh wide">先找出最多 3 条核心主张，判断每个问题是<b>切断</b>还是<b>收窄</b>它的证据链，把主张改写为证据能支持的最强版本，再由判定划定 1–6 分的范围。点左侧判定看分数落在哪里。</p>
+      <p class="lead flead en wide">Find up to three core claims, decide whether each issue <b>cuts</b> or <b>narrows</b> its chain of evidence, rewrite each claim as the strongest version the evidence supports, and let the verdict set a 1–6 range. Pick a verdict on the left.</p>
+    </div>
+    <div class="scgrid rv">
+      <div class="verd" id="verd"></div>
+      <div class="scpanel">
+        <div class="ruler"><div class="thr"><span class="zh">接收线</span><span class="en">accept line</span></div><div class="ticks" id="ticks"></div></div>
+        <p class="scnote" id="scnote"></p>
+        <div class="tiers">
+          <div class="tier a"><b><span class="zh">A 致命 · 切断</span><span class="en">A fatal · cuts</span></b><span class="zh">现有证据已不支撑主张：公平条件下增益消失、主结果与自身数据矛盾</span><span class="en">The evidence no longer supports the claim: gains vanish under fair conditions, results contradict the paper's own data</span></div>
+          <div class="tier b"><b><span class="zh">B 实质 · 收窄</span><span class="en">B substantive · narrows</span></b><span class="zh">仍然支撑，但范围变小或部分未验证；缺最强基线、缺关键消融通常属此类</span><span class="en">Still supported but narrower or partly unverified; a missing strongest baseline or key ablation usually lands here</span></div>
+          <div class="tier c"><b><span class="zh">C 可修改</span><span class="en">C fixable</span></b><span class="zh">写作与呈现问题照常指出，合并为一条，不与核心问题并列</span><span class="en">Writing and presentation issues are still reported, merged into one item, never ranked with core issues</span></div>
+        </div>
+        <p class="motto"><span class="zh">“说过头”不等于“不成立”。</span><span class="en">Overclaiming is not the same as being wrong.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="neutral" class="alt">
+  <div class="wrap">
+    <div class="center rv">
+      <div class="eyebrow">Neutrality</div>
+      <h2><span class="zh">你的立场，改变不了它的分数</span><span class="en">Your stance does not move its score</span></h2>
+      <p class="lead zh">Skill 是开源的，谁都能改规则，这无法阻止；但可以让修改被发现，让表态无法起作用。<br><span class="nw">试着对它说一句：</span></p>
+      <p class="lead en">The skill is open source, so anyone can edit its rules; that cannot be stopped. What it can do is make edits visible and make stances powerless.<br><span class="nw">Try telling it:</span></p>
+    </div>
+    <div class="ntr">
+      <div class="say rv">
+        <div class="sayk"><span class="zh">你对 agent 说</span><span class="en">YOU SAY</span></div>
+        <div class="stances" id="stances"></div>
+        <div class="bubble" id="bubble"></div>
+        <div class="sayk"><span class="zh">它怎么处理</span><span class="en">WHAT IT DOES</span></div>
+        <div class="resp" id="resp"></div>
+      </div>
+      <div class="guards rv">
+        <div class="gd"><i>⚖️</i><div><b><span class="zh">对称自检</span><span class="en">Symmetric self-check</span></b><span class="zh">出分前反问：如果使用者的期望相反，这个分数还站得住吗？</span><span class="en">Before scoring: would this score hold if the user had wanted the opposite?</span></span></div></div>
+        <div class="gd"><i>🧹</i><div><b><span class="zh">复核者看不到表态</span><span class="en">The critic never sees the stance</span></b><span class="zh">复核子代理拿到的是去掉表态的 <code>review.for-critic.md</code>；简报里发现表态文字就拒绝生成。</span><span class="en">The critic gets <code>review.for-critic.md</code> with the stance removed; briefs that contain stance text are refused.</span></span></div></div>
+        <div class="gd"><i>🧪</i><div><b><span class="zh">偏见对照测试</span><span class="en">Bias A/B test</span></b><span class="zh"><code>stance_eval.py</code> 比较“不表态 / 希望拒 / 希望收”三次运行的总分、major 条数与优点。</span><span class="en"><code>stance_eval.py</code> compares score, major-issue count and strengths across neutral, "reject it" and "accept it" runs.</span></span></div></div>
+        <div class="gd"><i>🔏</i><div><b><span class="zh">规则指纹</span><span class="en">Rule fingerprint</span></b><span class="zh">每份 <code>review.json</code> 记录规则指纹，对照官方值即可知道规则是否被改过。v1.5.1：</span><span class="en">Every <code>review.json</code> records the rule fingerprint; compare with the official value to see if rules were edited. v1.5.1:</span> <code>a4465b789e4e8c9f…aead5b</code></span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="outputs">
+  <div class="wrap">
+    <div class="rv">
+      <div class="eyebrow">Outputs</div>
+      <h2><span class="zh">一次审稿，三样交付</span><span class="en">One review, three deliverables</span></h2>
+      <p class="lead zh">审稿内容用中文写，方便你核对；提交给会议的部分另生成英文版。每次审稿写到 <code>reviews/&lt;日期&gt;_&lt;标题&gt;/</code>。</p>
+      <p class="lead en">The review is written in Chinese for you to check; the venue-facing part is generated in English. Each run lands in <code>reviews/&lt;date&gt;_&lt;title&gt;/</code>.</p>
+    </div>
+    <div class="outs">
+      <div class="oc rv"><span class="fn">review-viewer.html</span><h3><span class="zh">PDF 阅读器</span><span class="en">PDF reader</span></h3><p class="zh">意见高亮在 PDF 原句上，页边编号标记、缩略图标出各页意见类型；论文速览把问题、方法、贡献与核对过的数字整理好；KaTeX 公式，单文件离线打开。</p><p class="en">Comments highlighted on the original sentences, numbered margin markers, thumbnails colored by comment type, a paper digest with checked numbers, KaTeX formulas, one offline HTML file.</p><a class="lk" href="docs/demo-viewer.html" target="_blank" rel="noopener"><span class="zh">打开 Demo ↗</span><span class="en">Open demo ↗</span></a></div>
+      <div class="oc rv"><span class="fn">comments_submission.html</span><h3><span class="zh">英文提交稿</span><span class="en">English submission</span></h3><p class="zh">Summary / Strengths / Weaknesses / Questions / Justification，每项简略、中等、详细三个版本，可随机混合；不足按对核心主张的影响排序；每段可编辑，可导出为 Markdown。</p><p class="en">Summary, Strengths, Weaknesses, Questions and Justification, each in short, medium and long versions you can mix; weaknesses ranked by impact on the core claims; every paragraph editable and exportable as Markdown.</p><span class="lk" style="color:var(--muted)">Markdown · short / medium / long</span></div>
+      <div class="oc rv"><span class="fn">source/ · review_process_files/</span><h3><span class="zh">可追溯的源数据</span><span class="en">Traceable source data</span></h3><p class="zh"><code>review.json</code>、中文审稿、会议表单、前作快照、创新性比较与复核记录都留在磁盘上，任何一条结论都能追到证据。</p><p class="en"><code>review.json</code>, the Chinese review, the venue form, prior-work snapshots, novelty comparisons and critic records all stay on disk, so every conclusion traces back to evidence.</p><a class="lk" href="examples/vggt-2503.11651v1/review.html" target="_blank" rel="noopener"><span class="zh">看 VGGT 完整审稿 ↗</span><span class="en">See the full VGGT review ↗</span></a></div>
+    </div>
+    <div class="prompt rv"><span class="k"><span class="zh">对 agent 说</span><span class="en">TELL YOUR AGENT</span></span><button class="copy" id="pcopy">Copy</button><p class="zh" id="pzh">用 best-paper-review 审这篇论文：paper.pdf</p><p class="en" id="pen">Use best-paper-review to review paper.pdf</p></div>
+  </div>
+</section>
+
+<section id="install" class="alt">
+  <div class="wrap">
+    <div class="rv">
+      <div class="eyebrow">Install</div>
+      <h2><span class="zh">两行命令装好</span><span class="en">Two lines to install</span></h2>
+      <p class="lead zh">Claude 与 Codex 共用同一份 SKILL.md。依赖只有 Python 3.9+ 标准库和 pdftotext（没有时自动改用 pypdf）；阅读器所需的 PDF.js、KaTeX 已内置。</p>
+      <p class="lead en">Claude and Codex share one SKILL.md. It needs only the Python 3.9+ standard library and pdftotext (falls back to pypdf); PDF.js and KaTeX for the reader are bundled.</p>
+    </div>
+    <div class="term rv">
+      <div class="bar"><i></i><i></i><i></i>
+        <div class="tabs" role="tablist" data-group="inst">
+          <button role="tab" aria-selected="true" data-tab="claude">Claude Code</button>
+          <button role="tab" aria-selected="false" data-tab="codex">Codex</button>
+          <button role="tab" aria-selected="false" data-tab="web">Claude.ai / Cowork</button>
+        </div>
+      </div>
+      <button class="copy" data-copy-from="#inst-claude" id="inst-copy">Copy</button>
+      <pre class="panel" data-group="inst" data-panel="claude" id="inst-claude">git clone https://github.com/gulucaptain/Best-Paper-Review-Skill.git
+cd Best-Paper-Review-Skill && ./install.sh claude   <span class="c"># → ~/.claude/skills/best-paper-review</span>
+
+<span class="zh"><span class="k">&gt;</span> 用 best-paper-review 审这篇论文：paper.pdf</span><span class="en"><span class="k">&gt;</span> Use best-paper-review to review paper.pdf</span></pre>
+      <pre class="panel" data-group="inst" data-panel="codex" id="inst-codex" hidden>git clone https://github.com/gulucaptain/Best-Paper-Review-Skill.git
+cd Best-Paper-Review-Skill && ./install.sh codex    <span class="c"># → ~/.agents/skills/best-paper-review</span>
+
+<span class="zh"><span class="k">&gt;</span> $best-paper-review 审这篇论文：paper.pdf</span><span class="en"><span class="k">&gt;</span> $best-paper-review review paper.pdf</span></pre>
+      <pre class="panel" data-group="inst" data-panel="web" id="inst-web" hidden>cd Best-Paper-Review-Skill/skills && zip -r best-paper-review.zip best-paper-review
+<span class="c"># upload the zip on the Skills page of Claude.ai</span>
+
+<span class="c"># try the synthetic demo locally</span>
+cd best-paper-review && python3 scripts/serve.py --demo   <span class="c"># http://127.0.0.1:8768</span></pre>
+    </div>
+    <p class="fine zh">⚠️ 正式审稿人请先查会议政策：多数会议限制在审稿中使用 LLM，未公开稿件不得发给外部服务。审稿结论需要你亲自核对，它是助手，不是审稿人。</p>
+    <p class="fine en">⚠️ Official reviewers: check your venue's policy first. Most venues restrict LLM use in reviewing, and unpublished manuscripts must not go to external services. Verify every conclusion yourself; it is an assistant, not a reviewer.</p>
+  </div>
+</section>
+
+<section id="cite">
+  <div class="wrap">
+    <div class="eyebrow">Cite</div>
+    <h2><span class="zh">引用</span><span class="en">Cite</span></h2>
+    <p class="lead zh">如果它帮到了你的审稿或投稿前自查，欢迎引用，或者点一个 ⭐ Star。</p>
+    <p class="lead en">If it helped your reviewing or pre-submission check, please cite it or leave a ⭐.</p>
+    <div class="cite" id="bib"><button class="copy" data-copy-from="#bib">Copy</button>@misc{zhao2026bestpaperreview,
+  title        = {Best-Paper-Review-Skill: Verifiable, Neutral Paper Review with Claude and Codex},
+  author       = {Zhao, Haoyu},
+  year         = {2026},
+  howpublished = {\url{https://github.com/gulucaptain/Best-Paper-Review-Skill}}
+}</div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap row">
+    <p style="margin:0"><b>Best-Paper-Review-Skill</b> · v1.5.1 · <a href="https://github.com/gulucaptain/Best-Paper-Review-Skill/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a></p>
+    <p style="margin:0"><a href="https://github.com/gulucaptain/Best-Paper-Review-Skill" target="_blank" rel="noopener">GitHub</a> · <a href="https://github.com/gulucaptain/Best-Paper-Review-Skill/issues" target="_blank" rel="noopener">Issues</a> · <span class="zh">Best-Paper 系列：</span><span class="en">Best-Paper series:</span> <a href="https://gulucaptain.github.io/Best-Paper-Writing-Skill/" target="_blank" rel="noopener">✍️ Writing</a> · 🔍 Review</p>
+  </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+const root=document.documentElement;
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const Z=()=>root.lang==='zh';
+const L=(a,b)=>Z()?a:b;
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+/* ===== data ===== */
+const RD=[ /* real excerpts from examples/vggt-2503.11651v1/review.json */
+ {id:'W01',kind:'bad',sev:['次要','minor'],page:1,dim:['实验','experiments'],
+  t:['“数百张图像、全部输出、不到一秒”与 Table 9 的计时不符','“Hundreds of images, all outputs, under a second” conflicts with Table 9'],
+  b:['Table 9 只计了特征骨干：50 帧已需 1.04 s，100 帧 3.12 s，200 帧 8.75 s，还没有计入预测头。小规模输入（10 帧约 0.2 s）的速度优势是真实的，本条不否定这一点。','Table 9 times only the backbone: 50 frames already take 1.04 s, 100 frames 3.12 s, 200 frames 8.75 s, before the heads. The speed advantage at small inputs (about 0.2 s for 10 frames) is real and not disputed here.'],
+  q:'It accepts up to hundreds of images and predicts cameras, point maps, depth maps, and point tracks for all images at once in less than a second.',num:'Table 9 · 200 frames → 8.75 s'},
+ {id:'W02',kind:'bad',sev:['主要','major'],page:6,dim:['实验','experiments'],
+  t:['“可处理数百视图”只有运行时间证据，缺少多视图数量下的精度','“Hundreds of views” has runtime evidence only, no accuracy at that scale'],
+  b:['训练时每个场景采样 2–24 帧，Table 1 与 Table 3 都只用 10 帧评测。Table 9 证明 200 帧能运行，但只报告时间和显存；这是训练范围之外的外推，恰恰最需要定量验证。','Training samples 2–24 frames per scene and Tables 1 and 3 evaluate on 10. Table 9 shows 200 frames run but reports only time and memory; this extrapolates beyond training and most needs a number.'],
+  q:'we randomly sample 2-24 frames from a random training scene',num:'train ≤ 24 · eval = 10 · claim: hundreds'},
+ {id:'S01',kind:'good',sev:['优点','strength'],page:7,dim:['实验','experiments'],
+  t:['纯前馈的相机估计优于依赖后处理优化的方法，且快一个数量级','Feed-forward camera estimation beats optimization-based methods, 10× faster'],
+  b:['Table 1 中 VGGT 在 RealEstate10K 上 AUC@30 为 85.3，高于 VGGSfM v2 的 78.9（+6.4，脚本复算 N1）；这是所有方法都未训练过的数据集，运行约 0.2 s 对约 10 s。','In Table 1 VGGT reaches 85.3 AUC@30 on RealEstate10K versus 78.9 for VGGSfM v2 (+6.4, recomputed as N1), on a dataset no method trained on, in about 0.2 s versus 10 s.'],
+  q:'Ours (Feed-Forward) Ours (with BA) 85.3 93.5 88.2 91.8',num:'N1 · 85.3 − 78.9 = +6.4 ✓'}
+];
+const CMP=[
+ [['引文','Quotes'],['可能凭记忆改写或编造','May be paraphrased or invented from memory'],['只能来自 PDF 快照，脚本校验原文与页码','Only from PDF snapshots, checked by text and page']],
+ [['创新性','Novelty'],['一次检索，凭印象说“已有类似工作”','One search, “similar work exists” from impression'],['每个贡献并行检索，读过双方原文才能说“不够新”','Parallel search per contribution; “not novel” only after reading both papers']],
+ [['前作日期','Prior-work dates'],['不核对','Not checked'],['按 arXiv 版本历史 / Crossref 核对，截止日之后的不算','Checked via arXiv history / Crossref; post-cutoff work excluded']],
+ [['伪问题','False issues'],['“未报告方差”“参数量不公平”……','“No variance reported”, “unfair parameter count”…'],['先在全文与附录搜作者是否已回应，再定级','Search the paper and appendix for the authors’ answer first, then grade']],
+ [['覆盖面','Coverage'],['想到哪写到哪','Whatever comes to mind'],['九个维度逐项给结论','A verdict on each of nine dimensions']],
+ [['出分','Scoring'],['问题越多分越低','More issues, lower score'],['由核心主张“成立 / 部分成立 / 不成立”划定范围','Range set by whether core claims hold, partly hold or fail']],
+ [['使用者施压','User pressure'],['容易顺着改分','Easily shifts the score'],['表态只记录；对称自检；没有新证据不改分','Stance recorded only; symmetric check; no new evidence, no change']],
+ [['交付','Output'],['一段文字','A block of text'],['中文审稿 + 会议表单 + PDF 阅读器 + 英文提交稿','Chinese review + venue form + PDF reader + English submission']]
+];
+const STEPS=[
+ ['🧭',['理解与拆贡献','Read & split'],['原子贡献 C1…Cn','atomic C1…Cn'],['抽取 PDF 快照并记录每页偏移，判断论文类型，把贡献拆成可单独检验的原子主张，并找出最多 3 条核心主张。','Extract a PDF snapshot with per-page offsets, classify the paper type, split contributions into atomic claims and pick up to three core claims.'],'extract_pdf · init_review'],
+ ['🔎',['并行查新','Novelty search'],['每贡献一个子代理','one agent each'],['为每个贡献生成简报，多个子代理并行检索（分页、缓存、引用追溯），按截止日期过滤，读最接近前作的原文后比较机制。','A brief per contribution; sub-agents search in parallel (paging, caching, citation tracing), filter by cutoff, read the closest prior work and compare mechanisms.'],'novelty plan · fetch_arxiv · verify_dates'],
+ ['✅',['九维度检查','Nine checks'],['每维度必须有结论','a verdict each'],['问题与动机、创新性、方法正确性、理论、实验设计、基线公平性、可复现性、写作与图表、局限与伦理，逐项给出结论，不允许漏查。','Problem, novelty, correctness, theory, experiment design, baseline fairness, reproducibility, writing and figures, limitations and ethics — each gets a verdict.'],'find_quote · numeric_checks'],
+ ['🛡️',['反证定级','Counter-evidence'],['A / B / C 三级','tiers A / B / C'],['每条批评先写作者最有力的辩护，查全文与附录；判断问题切断还是收窄核心证据链，撤销的候选单独列出。','Each criticism first states the authors’ best defense and searches the paper and appendix; then decides whether it cuts or narrows a core claim. Withdrawn candidates are listed.'],'evidence.py'],
+ ['🧑‍⚖️',['独立复核','Independent critic'],['新上下文子代理','fresh context'],['一个看不到表态的复核子代理逐条重读原文核对意见，同时检查偏重与偏轻；每条复核意见都处理后才能通过校验。','A critic that cannot see the user’s stance re-reads the paper per comment, checking both over- and under-grading; every critic note must be resolved to pass.'],'critique lint · critique plan'],
+ ['⚖️',['总评与自检','Score & self-check'],['按核心主张出分','core-claim verdict'],['由核心主张判定划定 1–6 分范围，按重要性在范围内调整；3 分须写阻断问题；出分前做对称自检与反向校验。','The core-claim verdict sets the 1–6 range, adjusted by significance; a 3 must name the blocking issue; a symmetric self-check and reverse check run before scoring.'],'score_range_check · neutrality'],
+ ['📦',['交付','Deliver'],['阅读器 + 提交稿','reader + submission'],['生成 PDF 阅读器、英文提交稿与会议表单，源数据与过程文件分开存放；规则指纹盖章。','Build the PDF reader, English submission and venue form; source and process files kept apart; stamped with the rule fingerprint.'],'finalize · package_viewer · submission']
+];
+const DIMS=[['问题与动机','Problem & motivation'],['创新性','Novelty'],['方法正确性','Correctness'],['理论','Theory'],['实验设计','Experiment design'],['基线公平性','Baseline fairness'],['可复现性','Reproducibility'],['写作与图表','Writing & figures'],['局限与伦理','Limitations & ethics']];
+const INJ=[
+ ['H1','W04',['ScanNet 按帧划分训练/测试，同一场景跨集合','ScanNet split by frame, so scenes cross train/test']],
+ ['H2','W05',['ETH3D 评测前逐视图对齐','ETH3D aligned per view before evaluation']],
+ ['H3','W06',['交替注意力共享权重、执行两次','Alternating attention shares weights and runs twice']],
+ ['H4','W03',['GSO 评测数据进入了预训练','GSO evaluation data leaked into pre-training']],
+ ['H5','W02',['按测试集选择 checkpoint','Checkpoint chosen on the test set']],
+ ['H6','W01',['梯度截断与多任务监督的说法矛盾','Gradient stopping contradicts multi-task claims']]
+];
+const VERD=[
+ {k:'fail',r:[1,2],def:2,t:['有核心主张不成立','A core claim fails'],s:['存在 A 类切断型问题','an A-tier issue cuts the evidence'],n:['<b>1–2 分</b>。证据链被切断的主张，不能靠改写挽回。伦理或诚信类 A 问题同样 ≤2。','<b>1–2</b>. A claim whose evidence chain is cut cannot be rescued by rewording. Ethics or integrity A-tier issues also cap at 2.']},
+ {k:'part',r:[2,3],def:3,t:['有核心主张部分成立','A core claim partly holds'],s:['改写后才站得住','holds only after rewording'],n:['<b>2–3 分</b>。3 分必须在 <code>blocking_issue</code> 写明阻断问题，或“贡献重要性不足”及理由。','<b>2–3</b>. A 3 must name its <code>blocking_issue</code>, or state “insufficient significance” with a reason.']},
+ {k:'narrow',r:[3,4],def:4,t:['都成立，有收窄型 B','All hold, B issues narrow them'],s:['缺最强基线、缺关键消融','missing baseline or key ablation'],n:['<b>3–4 分，默认 4</b>。缺基线但主张仍成立的论文不再被误拒；离线无法查证时按收窄处理。','<b>3–4, default 4</b>. A paper that lacks a baseline but whose claim still holds is no longer rejected by default; unverifiable-offline issues count as narrowing.']},
+ {k:'conly',r:[4,5],def:4,t:['都成立，核心只有 C','All hold, only C on the core'],s:['只剩写作与呈现问题','only writing & presentation'],n:['<b>4–5 分</b>。给 5 分要求 significance 为 high。','<b>4–5</b>. A 5 requires significance = high.']},
+ {k:'strong',r:[5,6],def:5,t:['都成立、贡献重要','All hold, important contribution'],s:['无问题或零星 C','no issues or a few C'],n:['<b>5–6 分</b>。significance 为 low 时，可比下限再低 1 分，但要写出理由。','<b>5–6</b>. With low significance the score may go one below the floor, with a written reason.']}
+];
+const SCALE=[['Strong Reject','强拒绝'],['Reject','拒绝'],['Weak Reject','弱拒绝'],['Weak Accept','弱接收'],['Accept','接收'],['Strong Accept','强接收']];
+const STANCE=[
+ {b:['希望这篇被拒','I hope this gets rejected'],st:'rec',sl:['记录 · 不执行','recorded · not obeyed'],r:['写入 <code>policy.user_stance</code>，推荐与评分只由论文证据决定；意见、总评和子代理简报里出现表态文字，<code>evidence.py</code> 会报错。','Written to <code>policy.user_stance</code>; recommendation and score follow the paper’s evidence only. Stance text in comments, the summary or sub-agent briefs makes <code>evidence.py</code> fail.']},
+ {b:['直接给 2 分','Just give it a 2'],st:'rec',sl:['记录 · 不执行','recorded · not obeyed'],r:['分数只由核心主张判定决定。指定分数同样记为表态；没有新证据，分数不变。','The score follows the core-claim verdict alone. A requested score is recorded as a stance; without new evidence, nothing changes.']},
+ {b:['这是竞争对手的论文','This is my competitor’s paper'],st:'coi',sl:['利益冲突','conflict of interest'],r:['提示声明或回避；Skill 不会为此生成可提交的意见与评分，只提供理解辅助。','It asks you to declare or recuse; it will not produce a submittable review or score, only help with understanding.']},
+ {b:['尽量找出所有问题','Find every possible issue'],st:'run',sl:['照常执行','carried out'],r:['这是合理的覆盖要求，照常执行；但定级、反证与出分标准不变，找得多不等于扣得多。','A legitimate coverage request, carried out; grading, counter-evidence and scoring standards stay the same. More issues found does not mean a lower score.']}
+];
+const MODES=[
+ ['quick',['快速预审','Quick pre-review'],['半小时内判断大方向','The big picture in half an hour'],['review.md','review.md']],
+ ['full',['完整审稿（默认）','Full review (default)'],['想看审稿人会怎么说','See what a reviewer would say'],['英文提交稿 + PDF 阅读器 + 源数据','English submission + PDF reader + source data']],
+ ['self',['投稿前自查','Pre-submission self-check'],['作者本人，想知道怎么改','For authors deciding what to fix'],['同上，另附被拒风险排序与修改方案','Same, plus ranked rejection risks and a fix plan']],
+ ['rebuttal',['答辩评估','Rebuttal assessment'],['已有评审与作者回复','Existing reviews and author response'],['逐条 已解决 / 部分解决 / 未解决','Resolved / partly / unresolved, per point']],
+ ['revise',['修改闭环','Revision loop'],['收到意见后修改论文','Revising after reviews'],['问题看板、修改核验、回复信','Issue board, change verification, response letter']]
+];
+/* benchmark (92 papers, skill v1.4.0) */
+const ACC=[{n:'Claude Opus',a:56.5,ac:52,b:73.9,bc:68},{n:'GPT-Astra',a:55.4,ac:51,b:72.8,bc:67},{n:'GPT-Sol',a:50.0,ac:46,b:67.4,bc:62}];
+const MEAN=[{n:'GPT-Astra · v1.4.0',v:2.34,k:'0/29',c:'var(--c-gray)'},{n:'GPT-Sol · v1.4.0',v:2.72,k:'0/29',c:'var(--c-gray)'},{n:'GPT-Sol · v1.5.1',v:3.38,k:'16/29',c:'var(--c-acc)'}];
+const DIST=[{s:2,l:['拒绝','Reject'],a:5,r:12},{s:3,l:['弱拒绝','Weak reject'],a:32,r:31},{s:4,l:['弱接收','Weak accept'],a:9,r:3}];
+const WAF=[{k:'ok',n:36,c:'var(--c-acc)',l:['三个模型都判对','All three correct']},{k:'fx',n:16,c:'var(--c-pink)',l:['共同误拒 → v1.5.1 改判接收','Shared false reject → accepted by v1.5.1']},{k:'fr',n:13,c:'var(--c-rej)',l:['共同误拒，v1.5.1 仍拒绝','Shared false reject, still rejected']},{k:'mix',n:27,c:'var(--c-gray)',l:['其余（模型之间有分歧）','Others (models disagree)']}];
+const CORE=[{l:['接收论文','Accepted'],v:12,t:46,c:'var(--c-acc)'},{l:['拒绝论文','Rejected'],v:1,t:46,c:'var(--c-rej)'}];
+
+/* ===== language ===== */
+function setLang(l){
+  root.lang=l;
+  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===l));
+  document.title=l==='zh'?'Best-Paper-Review-Skill · 可校验的 AI 论文审稿':'Best-Paper-Review-Skill · verifiable AI paper review';
+  store('bpr-lang',l); renderAll(); restartTyping();
+}
+document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>10),{passive:true});
+
+/* marquee */
+(function(){
+  const rows=[
+   ['“Not reported” ≠ “not done”','Table 9 contradicts Fig. 1','cutoff 2024-11-14','C1 · incremental but useful','withdrawn: variance in App. B','soundness 3 · presentation 3','core claim holds'],
+   ['find_quote ✓ p.7','evidence.py --strict ✓','N1: 85.3−78.9 = +6.4','verify_dates ✓ arXiv v1','rules_sha256 a4465b78…','novelty merge ✓'],
+   ['W02 · major · narrows','the strongest defense first','symmetric self-check','overclaiming ≠ wrong','blocking_issue','A cuts · B narrows · C fixable'],
+   ['Weak Accept 4/6','score_range_check ✓','critic K01 adopted','prompt injection flagged','policy.user_stance = none','confidence 4']];
+  const m=document.getElementById('marquee');
+  rows.forEach(r=>{const d=document.createElement('div');d.className='mrow';const t=r.concat(r,r,r);d.innerHTML=t.map(x=>`<span>${esc(x)}</span>`).join('');m.appendChild(d)});
+})();
+
+/* typing */
+let tyTimer;
+function restartTyping(){
+  clearTimeout(tyTimer);
+  const el=document.getElementById('typed');
+  const words=Z()?['引文','创新性','实验','评分','整篇审稿']:['quotes','novelty','experiments','the score','the whole review'];
+  if(RM){el.textContent=words.join(' · ');return}
+  let w=0,i=0,del=false;
+  (function tick(){
+    const word=words[w]; el.textContent=word.slice(0,i);
+    if(!del&&i<word.length){i++;tyTimer=setTimeout(tick,Z()?170:85)}
+    else if(!del){del=true;tyTimer=setTimeout(tick,1500)}
+    else if(i>0){i--;tyTimer=setTimeout(tick,45)}
+    else{del=false;w=(w+1)%words.length;tyTimer=setTimeout(tick,250)}
+  })();
+}
+
+/* ===== reader mock ===== */
+let rdI=0;
+function filler(n,cls){let s='';for(let i=0;i<n;i++)s+=`<div class="ln ${cls&&i===n-1?cls:''}"></div>`;return s}
+function renderReader(swap){
+  const c=RD[rdI];
+  const col=c.kind==='good'?['#d7f2e3','#1f9a63','#1f7a4d']:(c.sev[1]==='major'?['#fde0db','#d6453a','#b4362b']:['#ffe9b8','#e0a800','#a86f00']);
+  document.getElementById('rdTabs').innerHTML=RD.map((x,i)=>`<button role="tab" aria-selected="${i===rdI}" data-i="${i}">${x.id}</button>`).join('');
+  document.getElementById('rdThumbs').innerHTML=[1,2,3,4,5,6,7,8].map(p=>{const hit=RD.filter(x=>x.page===p);
+    return `<button class="${p===c.page?'on':''}" data-p="${p}" aria-label="page ${p}">${hit.map((x,k)=>`<i style="top:${14+k*8}px;background:${x.kind==='good'?'#1f9a63':(x.sev[1]==='major'?'#d6453a':'#e0a800')}"></i>`).join('')}<span>${p}</span></button>`}).join('');
+  const isTbl=c.page===7;
+  const body=c.page===1
+    ?`<div class="pt">VGGT: Visual Geometry Grounded Transformer</div><div class="pa">arXiv 2503.11651v1</div>${filler(5,'s')}<div class="q" id="q">${esc(c.q)}</div>${filler(6,'m')}<div class="sec">1. Introduction</div>${filler(7,'s')}`
+    :isTbl?`<div class="sec">4.1 Camera Pose Estimation</div>${filler(4,'s')}<table class="tbl"><tr><td>Method</td><td>Re10K</td><td>CO3Dv2</td></tr><tr><td>VGGSfM v2</td><td>78.9</td><td>83.4</td></tr><tr><td>DUSt3R</td><td>67.7</td><td>76.7</td></tr></table><div class="q" id="q" style="font-family:var(--mono);font-size:11px">${esc(c.q)}</div>${filler(8,'m')}`
+    :`<div class="sec">3.3 Training</div>${filler(4,'m')}<div class="q" id="q">… ${esc(c.q)} …</div>${filler(5,'s')}<div class="sec">4. Experiments</div>${filler(6,'m')}`;
+  document.getElementById('sheet').innerHTML=body+`<span class="mk" id="mk" style="--mkc:${col[2]}">${c.id}</span><div class="pgn">${c.page}</div>`;
+  const q=document.getElementById('q'),mk=document.getElementById('mk');
+  q.style.setProperty('--hl',col[0]);q.style.setProperty('--hlb',col[1]);
+  requestAnimationFrame(()=>{mk.style.top=(q.offsetTop)+'px';setTimeout(()=>{q.classList.add('lit');mk.classList.add('lit')},RM?0:120)});
+  const cm=document.getElementById('cm');
+  cm.innerHTML=`<div class="h"><span class="tag ${c.kind==='good'?'good':'bad'}">${c.id} · ${L(c.sev[0],c.sev[1])}</span><span class="chip">${L(c.dim[0],c.dim[1])} · p.${c.page}</span></div>
+    <h4>${esc(L(c.t[0],c.t[1]))}</h4><p>${esc(L(c.b[0],c.b[1]))}</p>
+    <div class="ev">“${esc(c.q.length>90?c.q.slice(0,88)+'…':c.q)}”</div>
+    <div class="ver"><span class="chip ok">${L('引文已校验','quote verified')} · p.${c.page}</span><span class="chip vi">${esc(c.num)}</span></div>`;
+  if(swap){cm.classList.remove('swap');void cm.offsetWidth;cm.classList.add('swap')}
+}
+if(0)document.getElementById('rdTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){rdI=+b.dataset.i;renderReader(true);stopAuto()}});
+if(0)document.getElementById('rdThumbs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=RD.findIndex(x=>x.page===+b.dataset.p);if(i>=0){rdI=i;renderReader(true);stopAuto()}});
+let auto=null;
+const vp=document.getElementById('vplayer');
+document.getElementById('vplay').addEventListener('click',()=>{vp.controls=true;vp.play();document.getElementById('vid').classList.add('playing')});
+function stopAuto(){if(auto){clearInterval(auto);auto=null}}
+
+/* ===== compare / pipeline / dims / inject / modes ===== */
+function renderCmp(){
+  document.getElementById('cmp').innerHTML=`<div class="row hd"><div></div><div class="a">${L('直接让 AI 审','Plain AI')}</div><div class="b">Best-Paper-Review-Skill</div></div>`+
+   CMP.map(r=>`<div class="row"><div class="k">${L(r[0][0],r[0][1])}</div><div class="a">${L(r[1][0],r[1][1])}</div><div class="b">${L(r[2][0],r[2][1])}</div></div>`).join('');
+}
+let stepI=0;
+function renderFlow(){
+  document.getElementById('flow').innerHTML=STEPS.map((s,i)=>`<button class="fs" role="tab" aria-selected="${i===stepI}" data-i="${i}"><div class="n">${s[0]}</div><b>${L(s[1][0],s[1][1])}</b><span>${L(s[2][0],s[2][1])}</span></button>`).join('');
+  const s=STEPS[stepI];
+  document.getElementById('stepd').innerHTML=`<p><b>${stepI+1}. ${L(s[1][0],s[1][1])}</b> — ${L(s[3][0],s[3][1])}</p><div>${s[4].split(' · ').map(x=>`<code>${x}</code>`).join(' ')}</div>`;
+  document.getElementById('dims').innerHTML=DIMS.map((d,i)=>`<span><i>D${i+1}</i>${L(d[0],d[1])}</span>`).join('');
+}
+document.getElementById('flow').addEventListener('click',e=>{const b=e.target.closest('.fs');if(b){stepI=+b.dataset.i;renderFlow()}});
+function renderInj(){
+  const m=document.getElementById('map'),was=m.dataset.shown==='1';
+  m.innerHTML=INJ.map((x,i)=>`<div class="mp${was?' in':''}" style="transition-delay:${i*.18}s"><span class="hid">${x[0]}</span><span class="d">${L(x[2][0],x[2][1])}</span><span class="ar">→</span><span class="w">${x[1]}</span></div>`).join('');
+}
+function renderModes(){
+  document.getElementById('modes').innerHTML=`<div class="mr mh"><div>${L('模式','MODE')}</div><div>${L('适用','WHEN')}</div><div>${L('交付','OUTPUT')}</div></div>`+
+   MODES.map(m=>`<div class="mr"><div>${m[0]} <span style="font-family:var(--sans);color:var(--ink);font-weight:600">${L(m[1][0],m[1][1])}</span></div><div>${L(m[2][0],m[2][1])}</div><div>${L(m[3][0],m[3][1])}</div></div>`).join('');
+}
+
+/* ===== scoring ===== */
+let vI=2;
+function renderScore(){
+  document.getElementById('verd').innerHTML=VERD.map((v,i)=>`<button aria-pressed="${i===vI}" data-i="${i}"><i>${v.r[0]}–${v.r[1]}</i><div><b>${L(v.t[0],v.t[1])}</b><span>${L(v.s[0],v.s[1])}</span></div></button>`).join('');
+  const v=VERD[vI];
+  document.getElementById('ticks').innerHTML=SCALE.map((s,i)=>{const n=i+1,on=n>=v.r[0]&&n<=v.r[1];return `<div class="${on?'on':''} ${n===v.def?'def':''}"><b>${n}</b><span>${Z()?s[1]:s[0]}${n===v.def?(Z()?' · 默认':' · default'):''}</span></div>`}).join('');
+  document.getElementById('scnote').innerHTML=L(v.n[0],v.n[1]);
+}
+document.getElementById('verd').addEventListener('click',e=>{const b=e.target.closest('button');if(b){vI=+b.dataset.i;renderScore()}});
+
+/* ===== neutrality ===== */
+let sI=0;
+function renderStance(){
+  document.getElementById('stances').innerHTML=STANCE.map((s,i)=>`<button aria-pressed="${i===sI}" data-i="${i}">${L(s.b[0],s.b[1])}</button>`).join('');
+  const s=STANCE[sI];
+  document.getElementById('bubble').textContent=L('用 best-paper-review 审这篇论文。'+s.b[0]+'。','Review this paper with best-paper-review. '+s.b[1]+'.');
+  document.getElementById('resp').innerHTML=`<span class="st ${s.st}">${L(s.sl[0],s.sl[1])}</span><br>${L(s.r[0],s.r[1])}`;
+}
+document.getElementById('stances').addEventListener('click',e=>{const b=e.target.closest('button');if(b){sI=+b.dataset.i;renderStance()}});
+
+/* ===== charts ===== */
+const tip=document.getElementById('tip');
+function tipOn(e,html){tip.innerHTML=html;tip.classList.add('show');tipMove(e)}
+function tipMove(e){const x=Math.min(innerWidth-tip.offsetWidth-10,e.clientX+14);tip.style.left=x+'px';tip.style.top=(e.clientY-tip.offsetHeight-12)+'px'}
+function tipOff(){tip.classList.remove('show')}
+function bindTips(svg){svg.querySelectorAll('[data-tip]').forEach(el=>{el.addEventListener('mouseenter',e=>tipOn(e,el.dataset.tip));el.addEventListener('mousemove',tipMove);el.addEventListener('mouseleave',tipOff)})}
+let shown=false;
+function rbar(x,y,w,h,fill,horiz){ /* 4px rounded data-end, square at baseline */
+  const r=Math.min(4,horiz?h/2:w/2,horiz?w:h);if((horiz?w:h)<=0)return '';
+  return horiz
+   ?`<path d="M${x},${y}h${w-r}a${r},${r} 0 0 1 ${r},${r}v${h-2*r}a${r},${r} 0 0 1 -${r},${r}h-${w-r}z" fill="${fill}"/>`
+   :`<path d="M${x},${y+h}v-${h-r}a${r},${r} 0 0 1 ${r},-${r}h${w-2*r}a${r},${r} 0 0 1 ${r},${r}v${h-r}z" fill="${fill}"/>`;
+}
+function chAcc(){
+  const svg=document.getElementById('chAcc'),X0=150,W=800,k=shown?1:0,sx=v=>X0+v/100*W,bh=26;
+  let s='';[0,25,50,75,100].forEach(t=>{s+=`<line class="grid" x1="${sx(t)}" x2="${sx(t)}" y1="8" y2="232"/><text x="${sx(t)}" y="252" text-anchor="middle">${t}%</text>`});
+  ACC.forEach((m,i)=>{const y=22+i*74;
+    s+=`<text class="nm" x="${X0-14}" y="${y+bh+6}" text-anchor="end">${m.n}</text>`;
+    [[m.a,m.ac,'var(--c-gray)','Skill v1.4.0'],[m.b,m.bc,'var(--c-acc)','Skill v1.5.1']].forEach((q,j)=>{const yy=y+j*(bh+4);
+      s+=rbar(X0,yy,q[0]/100*W*k,bh,q[2],true)+`<text class="v" x="${X0+q[0]/100*W*k+8}" y="${yy+18}">${q[0].toFixed(1)}%${j?`<tspan class="dl" dx="10">+${(m.b-m.a).toFixed(1)}</tspan>`:''}</text>`;
+      s+=`<rect class="hit" x="0" y="${yy-2}" width="1040" height="${bh+4}" data-tip="<b>${m.n}</b> · ${q[3]}<br>${L('判对','correct')} ${q[1]}/92 · ${q[0].toFixed(1)}%"/>`});
+  });
+  s+=`<line class="chance" x1="${sx(50)}" x2="${sx(50)}" y1="4" y2="234"/><text x="${sx(50)+6}" y="14" style="font-weight:600">${L('随机 50%','chance 50%')}</text><line class="base" x1="${X0}" x2="${X0}" y1="8" y2="232"/>`;
+  svg.innerHTML=s;bindTips(svg);
+}
+function chMean(){
+  const svg=document.getElementById('chMean'),X0=140,W=220,k=shown?1:0,sx=v=>X0+v/6*W,bh=26;
+  let s='';[0,1,2,3,4,5,6].forEach(t=>{s+=`<line class="grid" x1="${sx(t)}" x2="${sx(t)}" y1="10" y2="150"/><text x="${sx(t)}" y="168" text-anchor="middle">${t}</text>`});
+  MEAN.forEach((m,i)=>{const y=22+i*44;
+    s+=`<text class="nm" x="${X0-10}" y="${y+18}" text-anchor="end">${m.n}</text>`;
+    s+=rbar(X0,y,m.v/6*W*k,bh,m.c,true)+`<text class="v" x="${X0+W+14}" y="${y+18}">${m.v.toFixed(2)} · ${m.k} ${L('改判接收','accepted')}</text>`;
+    s+=`<rect class="hit" x="0" y="${y-6}" width="520" height="${bh+12}" data-tip="<b>${m.n}</b><br>${L('平均分','mean score')} ${m.v.toFixed(2)} · ${L('改判接收','accepted')} ${m.k}"/>`});
+  s+=`<line class="chance" x1="${sx(4)}" x2="${sx(4)}" y1="6" y2="152"/><text x="${sx(4)+5}" y="16" style="font-weight:600">${L('接收线 4','accept ≥ 4')}</text><line class="base" x1="${X0}" x2="${X0}" y1="10" y2="150"/>`;
+  s+=`<text x="${X0}" y="192">${L('平均分（1–6）· 29 篇均为真实接收论文','mean score (1–6) · all 29 are accepted papers')}</text>`;
+  svg.innerHTML=s;bindTips(svg);
+}
+function chDist(){
+  const svg=document.getElementById('chDist'),Y0=168,H=150,max=35,k=shown?1:0,sy=v=>v/max*H;
+  let s='';[0,10,20,30].forEach(t=>{const y=Y0-sy(t);s+=`<line class="grid" x1="40" x2="510" y1="${y}" y2="${y}"/><text x="32" y="${y+4}" text-anchor="end">${t}</text>`});
+  DIST.forEach((d,i)=>{const cx=110+i*155,bw=46;
+    [['a','var(--c-acc)',L('真实接收','accepted')],['r','var(--c-rej)',L('真实拒绝','rejected')]].forEach((q,j)=>{const x=cx-bw-1+j*(bw+2),h=sy(d[q[0]])*k;
+      s+=rbar(x,Y0-h,bw,h,q[1],false)+`<text class="v" x="${x+bw/2}" y="${Y0-h-6}" text-anchor="middle">${d[q[0]]}</text>`;
+      s+=`<rect class="hit" x="${x-4}" y="10" width="${bw+8}" height="${Y0-10}" data-tip="${L('评分','score')} ${d.s} · ${L(d.l[0],d.l[1])}<br>${q[2]}: <b>${d[q[0]]}</b>"/>`});
+    s+=`<text class="nm" x="${cx}" y="${Y0+20}" text-anchor="middle">${d.s} · ${L(d.l[0],d.l[1])}</text>`});
+  s+=`<line class="base" x1="40" x2="510" y1="${Y0}" y2="${Y0}"/>`;
+  svg.innerHTML=s;bindTips(svg);
+}
+function chWaf(){
+  const svg=document.getElementById('chWaf'),cols=23,sz=18,g=3,x0=(520-(cols*(sz+g)-g))/2;
+  let s='',idx=0;
+  WAF.forEach(w=>{for(let j=0;j<w.n;j++,idx++){const c=idx%cols,r=Math.floor(idx/cols);
+    s+=`<rect x="${x0+c*(sz+g)}" y="${8+r*(sz+g)}" width="${sz}" height="${sz}" rx="4" fill="${w.c}" style="opacity:${shown?1:0};transition:opacity .4s ${RM?0:(idx*0.012).toFixed(2)}s" data-tip="<b>${w.n}</b> · ${L(w.l[0],w.l[1])}"/>`}});
+  svg.innerHTML=s;bindTips(svg);
+  document.getElementById('wafLeg').innerHTML=WAF.map(w=>`<span><i style="background:${w.c}"></i>${w.n} · ${L(w.l[0],w.l[1])}</span>`).join('');
+}
+function chCore(){
+  const svg=document.getElementById('chCore'),X0=110,W=360,k=shown?1:0,sx=v=>v/46*W;
+  let s='';[0,10,20,30,40].forEach(t=>{s+=`<line class="grid" x1="${X0+sx(t)}" x2="${X0+sx(t)}" y1="10" y2="112"/><text x="${X0+sx(t)}" y="128" text-anchor="middle">${t}</text>`});
+  CORE.forEach((c,i)=>{const y=22+i*46;
+    s+=`<text class="nm" x="${X0-10}" y="${y+17}" text-anchor="end">${L(c.l[0],c.l[1])}</text>`;
+    s+=`<rect x="${X0}" y="${y}" width="${W}" height="24" rx="4" fill="var(--bg2)"/>`;
+    s+=rbar(X0,y,sx(c.v)*k,24,c.c,true);
+    s+=`<text class="v" x="${X0+sx(c.v)*k+8}" y="${y+17}">${c.v} / ${c.t}</text>`;
+    s+=`<rect class="hit" x="0" y="${y-8}" width="520" height="40" data-tip="${L(c.l[0],c.l[1])}: <b>${c.v}/${c.t}</b> ${L('篇核心贡献完全成立','with the core contribution fully holding')}"/>`});
+  s+=`<line class="base" x1="${X0}" x2="${X0}" y1="10" y2="112"/><text x="${X0}" y="152">${L('篇数（每组 46 篇）· 事后对已有审稿按条例重新定级','papers (46 per group) · post hoc re-grading of existing reviews')}</text>`;
+  svg.innerHTML=s;bindTips(svg);
+}
+function renderCharts(){chAcc()}
+
+function renderAll(){renderCmp();renderFlow();renderInj();renderScore();renderStance();renderCharts()}
+
+/* ===== reveal + count ===== */
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting)return;const t=e.target;io.unobserve(t);
+  if(t.dataset.count){const end=+t.dataset.count,t0=performance.now(),D=RM?0:1200;
+    (function f(now){const k=D?Math.min(1,(now-t0)/D):1;t.textContent=Math.round(end*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)})(t0)}
+  else{t.classList.add('in');
+    if(t.classList.contains('bpanel')){shown=true;requestAnimationFrame(renderCharts)}
+    if(t.querySelector&&t.querySelector('#map')){const m=document.getElementById('map');m.dataset.shown='1';m.querySelectorAll('.mp').forEach(x=>x.classList.add('in'))}
+    if(t.classList.contains('flowbox'))document.getElementById('flow').classList.add('in')}
+}),{threshold:.2});
+document.querySelectorAll('[data-count],.rv').forEach(el=>io.observe(el));
+
+/* ===== tabs + copy ===== */
+document.querySelectorAll('[role=tablist][data-group]').forEach(list=>{
+  const g=list.dataset.group;
+  list.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{
+    list.querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected',b===btn));
+    document.querySelectorAll('.panel[data-group="'+g+'"]').forEach(p=>p.hidden=p.dataset.panel!==btn.dataset.tab);
+    if(g==='inst')document.getElementById('inst-copy').dataset.copyFrom='#inst-'+btn.dataset.tab;
+  }));
+});
+const toast=document.getElementById('toast');
+function say(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1400)}
+async function copyText(t){try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(_){}a.remove()}say(Z()?'已复制':'Copied')}
+document.getElementById('pcopy').addEventListener('click',e=>{e.stopPropagation();copyText(document.getElementById(Z()?'pzh':'pen').textContent)});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.copy');if(!b||b.id==='pcopy')return;
+  const el=document.querySelector(b.dataset.copyFrom);if(!el)return;
+  const c=el.cloneNode(true);c.querySelectorAll('.copy').forEach(n=>n.remove());
+  c.querySelectorAll(Z()?'.en':'.zh').forEach(n=>n.remove());
+  copyText(el.id==='bib'?c.textContent.trim():c.textContent.split('\n').filter(l=>l.trim()&&!/^\s*[#>]/.test(l)).map(l=>l.replace(/\s+#.*$/,'')).join('\n'));
+});
+
+(function(){let l=store('bpr-lang');if(!l)l=(navigator.language||'zh').toLowerCase().startsWith('zh')?'zh':'en';setLang(l)})();
+/* case study tabs */
+(()=>{const f=document.getElementById('caseframe'),o=document.getElementById('caseopen');if(!f)return;const wide=()=>matchMedia('(min-width:761px)').matches;const load=()=>{if(wide()&&!f.getAttribute('src'))f.src=f.dataset.src;};load();addEventListener('resize',load);
+document.querySelectorAll('#case [data-src]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#case [data-src]').forEach(x=>x.setAttribute('aria-selected',x===b));f.dataset.src=b.dataset.src;f.src=b.dataset.src;o.href=b.dataset.src.replace('?embed=1','');}));})();
+</script>
+</body>
+</html>

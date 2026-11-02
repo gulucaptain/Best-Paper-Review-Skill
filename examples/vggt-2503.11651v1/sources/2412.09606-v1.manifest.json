@@ -1,0 +1,133 @@
+{
+  "manifest_version": 1,
+  "generated_by": "extract_pdf.py",
+  "tool": "pdftotext version 24.02.0",
+  "pdf_sha256": "7cf80591e6df308b514871d1c4a2b01e2b76428c594b485cce31f231ff20abd6",
+  "pdf_name": "2412.09606-v1.pdf",
+  "pages": [
+    {
+      "page": 1,
+      "start": 0,
+      "end": 3380
+    },
+    {
+      "page": 2,
+      "start": 3382,
+      "end": 8268
+    },
+    {
+      "page": 3,
+      "start": 8270,
+      "end": 14013
+    },
+    {
+      "page": 4,
+      "start": 14015,
+      "end": 19333
+    },
+    {
+      "page": 5,
+      "start": 19335,
+      "end": 26155
+    },
+    {
+      "page": 6,
+      "start": 26157,
+      "end": 29022
+    },
+    {
+      "page": 7,
+      "start": 29024,
+      "end": 33476
+    },
+    {
+      "page": 8,
+      "start": 33478,
+      "end": 38125
+    },
+    {
+      "page": 9,
+      "start": 38127,
+      "end": 41982
+    },
+    {
+      "page": 10,
+      "start": 41984,
+      "end": 46947
+    },
+    {
+      "page": 11,
+      "start": 46949,
+      "end": 52427
+    },
+    {
+      "page": 12,
+      "start": 52429,
+      "end": 53982
+    },
+    {
+      "page": 13,
+      "start": 53984,
+      "end": 56542
+    },
+    {
+      "page": 14,
+      "start": 56544,
+      "end": 64720
+    },
+    {
+      "page": 15,
+      "start": 64722,
+      "end": 72897
+    },
+    {
+      "page": 16,
+      "start": 72899,
+      "end": 81070
+    },
+    {
+      "page": 17,
+      "start": 81072,
+      "end": 92150
+    },
+    {
+      "page": 18,
+      "start": 92152,
+      "end": 97953
+    },
+    {
+      "page": 19,
+      "start": 97955,
+      "end": 103689
+    },
+    {
+      "page": 20,
+      "start": 103691,
+      "end": 109483
+    },
+    {
+      "page": 21,
+      "start": 109485,
+      "end": 115338
+    },
+    {
+      "page": 22,
+      "start": 115340,
+      "end": 120949
+    }
+  ],
+  "page_count": 22,
+  "text_sha256": "72a7413f23a57296a2c29f4c237a939162d39b137e840ff7510502b759a8055a",
+  "low_text_pages": [],
+  "injection_hits": [],
+  "created_at": "2026-10-31T08:04:46+00:00",
+  "url": "https://arxiv.org/abs/2412.09606v1",
+  "arxiv_id": "2412.09606",
+  "version": "v1",
+  "public_date": "2024-12-12",
+  "title": "Feat2GS: Probing Visual Foundation Models with Gaussian Splatting",
+  "all_versions": {
+    "v1": "2024-12-12",
+    "v2": "2026-02-02"
+  }
+}

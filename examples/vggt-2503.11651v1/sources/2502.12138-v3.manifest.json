@@ -1,0 +1,108 @@
+{
+  "manifest_version": 1,
+  "generated_by": "extract_pdf.py",
+  "tool": "pdftotext version 24.02.0",
+  "pdf_sha256": "cab5e00491528bc23aa9489e53dda2933f44f642937135210cf4a1672ad8f643",
+  "pdf_name": "2502.12138-v3.pdf",
+  "pages": [
+    {
+      "page": 1,
+      "start": 0,
+      "end": 2107
+    },
+    {
+      "page": 2,
+      "start": 2109,
+      "end": 7780
+    },
+    {
+      "page": 3,
+      "start": 7782,
+      "end": 13569
+    },
+    {
+      "page": 4,
+      "start": 13571,
+      "end": 17997
+    },
+    {
+      "page": 5,
+      "start": 17999,
+      "end": 22402
+    },
+    {
+      "page": 6,
+      "start": 22404,
+      "end": 27421
+    },
+    {
+      "page": 7,
+      "start": 27423,
+      "end": 30369
+    },
+    {
+      "page": 8,
+      "start": 30371,
+      "end": 32622
+    },
+    {
+      "page": 9,
+      "start": 32624,
+      "end": 34454
+    },
+    {
+      "page": 10,
+      "start": 34456,
+      "end": 40147
+    },
+    {
+      "page": 11,
+      "start": 40149,
+      "end": 45876
+    },
+    {
+      "page": 12,
+      "start": 45878,
+      "end": 51675
+    },
+    {
+      "page": 13,
+      "start": 51677,
+      "end": 57327
+    },
+    {
+      "page": 14,
+      "start": 57329,
+      "end": 61074
+    },
+    {
+      "page": 15,
+      "start": 61076,
+      "end": 62714
+    },
+    {
+      "page": 16,
+      "start": 62716,
+      "end": 64648
+    }
+  ],
+  "page_count": 16,
+  "text_sha256": "85349500ecb11021eaea3b0efada8113423272b3594b64324f7cf8730442b0ea",
+  "low_text_pages": [],
+  "injection_hits": [],
+  "created_at": "2026-10-31T08:12:18+00:00",
+  "url": "https://arxiv.org/abs/2502.12138v3",
+  "arxiv_id": "2502.12138",
+  "version": "v3",
+  "public_date": "2025-03-03",
+  "title": "FLARE: Feed-forward Geometry, Appearance and Camera Estimation from Uncalibrated Sparse Views",
+  "all_versions": {
+    "v1": "2025-02-17",
+    "v2": "2025-02-19",
+    "v3": "2025-03-03",
+    "v4": "2025-03-24",
+    "v5": "2025-10-22",
+    "v6": "2025-11-01",
+    "v7": "2026-01-25"
+  }
+}

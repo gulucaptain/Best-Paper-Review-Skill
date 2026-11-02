@@ -1,0 +1,226 @@
+{
+  "contribution_id": "C2",
+  "searches": [
+    {
+      "provider": "arxiv",
+      "query": "alternating frame-wise global attention multi-view 3D reconstruction",
+      "file": "search/C2-arxiv-1.json",
+      "hits": 0,
+      "error": null
+    },
+    {
+      "provider": "semantic",
+      "query": "alternating frame-wise global attention multi-view 3D reconstruction",
+      "file": "search/C2-s2-1.json",
+      "hits": 0,
+      "error": "HTTP 429"
+    },
+    {
+      "provider": "arxiv",
+      "query": "factorized intra-frame inter-frame attention multi-view transformer",
+      "file": "search/C2-arxiv-2.json",
+      "hits": 0,
+      "error": null
+    },
+    {
+      "provider": "openalex",
+      "query": "factorized intra-frame inter-frame attention multi-view transformer",
+      "file": "search/C2-openalex-2.json",
+      "hits": 0,
+      "error": "HTTP 429"
+    },
+    {
+      "provider": "arxiv",
+      "query": "reference view token multi-view pose estimation transformer",
+      "file": "search/C2-arxiv-3.json",
+      "hits": 2,
+      "error": null
+    },
+    {
+      "provider": "semantic",
+      "query": "reference view token multi-view transformer camera pose",
+      "file": "search/C2-s2-3.json",
+      "hits": 20,
+      "error": null
+    },
+    {
+      "provider": "arxiv",
+      "query": "Fast3R",
+      "file": "search/C2-arxiv-4.json",
+      "hits": 2,
+      "error": null
+    },
+    {
+      "provider": "arxiv",
+      "query": "multi-view DUSt3R global attention",
+      "file": "search/C2-arxiv-5.json",
+      "hits": 0,
+      "error": null
+    },
+    {
+      "provider": "dblp",
+      "query": "alternating attention multi-view 3D",
+      "file": "search/C2-dblp-1.json",
+      "hits": 0,
+      "error": "JSONDecodeError"
+    },
+    {
+      "provider": "semantic-refs",
+      "query": "arXiv:2412.06974",
+      "file": "search/C2-refs.json",
+      "hits": 20,
+      "error": null
+    },
+    {
+      "provider": "arxiv",
+      "query": "frame attention global attention pose",
+      "file": "search/C2-arxiv-6.json",
+      "hits": 20,
+      "error": null
+    }
+  ],
+  "candidates": [
+    {
+      "title": "MV-DUSt3R+: Single-Stage Scene Reconstruction from Sparse Views In 2 Seconds",
+      "arxiv_id": "2412.06974",
+      "version": "v1",
+      "public_date": "2024-12-09",
+      "read": true,
+      "source_id": "2412.06974-v1",
+      "relevance": "high",
+      "concurrent": true
+    },
+    {
+      "title": "DUSt3R: Geometric 3D Vision Made Easy",
+      "arxiv_id": "2312.14132",
+      "version": "v3",
+      "public_date": "2024-12-02",
+      "read": true,
+      "source_id": "2312.14132-v3",
+      "relevance": "high",
+      "concurrent": false
+    },
+    {
+      "title": "Fast3R: Towards 3D Reconstruction of 1000+ Images in One Forward Pass",
+      "arxiv_id": "2501.13928",
+      "version": "v1",
+      "public_date": "2025-01-23",
+      "read": false,
+      "source_id": null,
+      "relevance": "high",
+      "concurrent": true
+    },
+    {
+      "title": "GS-LRM: Large Reconstruction Model for 3D Gaussian Splatting",
+      "arxiv_id": "2404.19702",
+      "version": null,
+      "public_date": "2024-04-30",
+      "read": false,
+      "source_id": null,
+      "relevance": "medium",
+      "concurrent": false
+    },
+    {
+      "title": "FreeSplatter: Pose-free Gaussian Splatting for Sparse-view 3D Reconstruction",
+      "arxiv_id": "2412.09573",
+      "version": null,
+      "public_date": "2024-12-12",
+      "read": false,
+      "source_id": null,
+      "relevance": "medium",
+      "concurrent": true
+    }
+  ],
+  "sources": [
+    {
+      "id": "2412.06974-v1",
+      "role": "comparator",
+      "path": "sources/2412.06974-v1.txt",
+      "manifest": "sources/2412.06974-v1.manifest.json",
+      "sha256": "91fe566c9727c1e4d516a0584c4d71fa42bb33c991dd910cc6dd881229f3d6a9",
+      "url": "https://arxiv.org/abs/2412.06974v1",
+      "version": "v1",
+      "arxiv_id": "2412.06974",
+      "public_date": "2024-12-09",
+      "title": "MV-DUSt3R+: Single-Stage Scene Reconstruction from Sparse Views In 2 Seconds",
+      "date_verified": {
+        "method": "arxiv-abs-history",
+        "value": "2024-12-09",
+        "url": "https://arxiv.org/abs/2412.06974",
+        "checked_at": "2026-10-31T08:05:22+00:00"
+      }
+    },
+    {
+      "id": "2312.14132-v3",
+      "role": "comparator",
+      "path": "sources/2312.14132-v3.txt",
+      "manifest": "sources/2312.14132-v3.manifest.json",
+      "sha256": "1c569d57aa375896bd596d700a631edd81e2cabc2ce3be24acc479cf12706505",
+      "url": "https://arxiv.org/abs/2312.14132v3",
+      "version": "v3",
+      "arxiv_id": "2312.14132",
+      "public_date": "2024-12-02",
+      "title": "DUSt3R: Geometric 3D Vision Made Easy",
+      "date_verified": {
+        "method": "arxiv-abs-history",
+        "value": "2024-12-02",
+        "url": "https://arxiv.org/abs/2312.14132",
+        "checked_at": "2026-10-31T08:05:22+00:00"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "comparator_id": "2412.06974-v1",
+      "common_mechanism": "共享 ViT 编码器得到每视图 patch token，再由多层 decoder 块在任意数量视图之间交换信息，单次前向输出所有视图在参考视图坐标系下的点图；参考视图与其他视图被显式区分（MV-DUSt3R 用不同权重的参考/源视图 decoder 与 head）。每个块内也是“视图内 self-attention + 跨视图信息融合”的交替结构。",
+      "differences": "MV-DUSt3R 的跨视图融合用 cross-attention（主 token 只查询其他视图的次级 token），且参考视图通过整套独立权重（DecBlock_ref / Head_ref）区分；VGGT 只用 self-attention，跨帧层是对所有帧所有 token 的全局 self-attention，参考帧仅通过一组不同的可学习相机/寄存器 token 区分，主干权重全部共享。MV-DUSt3R+ 还需多参考视图路径与 Cross-Reference-View 块来弥补单参考视图的局限，VGGT 没有这类结构。",
+      "problem": "同为无位姿稀疏/多视图场景重建（点图），MV-DUSt3R+ 还附加高斯泼溅新视角合成；VGGT 额外直接回归相机参数、深度和跟踪特征。",
+      "assumptions": "都假设未知内外参、单次前向、以某一参考视图坐标系表达输出。",
+      "guarantee_or_insight": "MV-DUSt3R+ 的洞见是单参考视图在大视角变化下不足，需要多参考视图融合；VGGT 的洞见是全局 self-attention 与逐帧 self-attention 交替即可、cross-attention 反而更差（作者 Tab.5 消融）。",
+      "resources": "MV-DUSt3R 由 DUSt3R 预训练权重初始化，参数量与 DUSt3R 接近；VGGT 从 DINO 出发训练约 1.2B 参数的大模型（数据与算力规模大得多，此处未逐项核对）。",
+      "manuscript_side": "VGGT p.4：'Note that our architecture does not employ any cross-attention layers, only self-attention ones.'；'This strikes a balance between integrating information across different images and normalizing the activations for the tokens within each image'。VGGT 在 Tab.1 把 MV-DUSt3R 标为同期工作（‡）。",
+      "comparator_quotes": [
+        {
+          "quote": "two types of decoders are used, one for the chosen reference view and one for the remaining source views",
+          "page": 5
+        },
+        {
+          "quote": "In each block, a self-attention layer is applied to primary tokens only, and a cross-attention layer fuses primary tokens with secondary tokens before a final MLP is applied on the primary tokens.",
+          "page": 5
+        },
+        {
+          "quote": "we include a novel Cross-Reference-View block into MV-DUSt3R+",
+          "page": 6
+        }
+      ],
+      "delta_significance": "把跨视图交互从 cross-attention 换成全局 self-attention、把参考视图区分从独立权重缩减为一组 token，是结构上的简化与统一；在 VGGT 自身消融中带来可观提升（ETH3D Overall 0.709 vs cross-attention 1.061），但该消融并非与 MV-DUSt3R 本身对比。",
+      "strongest_counterargument": "“视图内 self-attn + 跨所有视图交互”的交替块与“区分参考视图”在 MV-DUSt3R（2024-12，截止前约 3 个月，属同期）中已存在；VGGT 的差异可被视为把 cross-attention 换成 joint self-attention 的工程选择。"
+    },
+    {
+      "comparator_id": "2312.14132-v3",
+      "common_mechanism": "decoder 块交替执行视图内 self-attention 与跨视图注意力；输出统一表达在第一张图像的坐标系，第一视图与第二视图使用不同的分支，即区分参考帧。",
+      "differences": "DUSt3R 只处理两张图，跨视图交互是 cross-attention，两分支有各自权重；VGGT 处理任意 N 帧，跨帧层是全局 self-attention，权重共享，仅以首帧专用 token 区分参考帧。",
+      "problem": "两视图点图回归，多视图需要成对推理加全局优化；VGGT 一次前向处理多帧且无需后优化。",
+      "assumptions": "都不需要已知相机；DUSt3R 依赖成对推理加后处理。",
+      "guarantee_or_insight": "DUSt3R 强调两分支持续交换信息对点图对齐至关重要；VGGT 把这一交替模式推广为逐帧/全局 self-attention。",
+      "resources": "DUSt3R 使用 CroCo 预训练 ViT；VGGT 用 DINO patchify 加大规模多数据集训练。",
+      "manuscript_side": "VGGT 的 Tab.5 中 'Cross-Attention' 变体与 DUSt3R 式设计类似，VGGT 报告其不如 Alternating-Attention。",
+      "comparator_quotes": [
+        {
+          "quote": "decoder block thus sequentially performs self-attention (each token of a view attends to tokens of the same view), then cross-attention (each token of a view attends to all other tokens of the other view), and finally feeds tokens to a MLP",
+          "page": 4
+        },
+        {
+          "quote": "the two pointmaps are expressed in the same coordinate frame of the first image",
+          "page": 4
+        }
+      ],
+      "delta_significance": "VGGT 的交替注意力可以看作 DUSt3R 交替 self/cross 结构在 N 视图上的 self-attention 化推广，加上用 token 而非独立分支区分参考帧；新意主要在去掉 cross-attention 与参考帧 token 化，以及这种简化在大规模下有效的实证。",
+      "strongest_counterargument": "交替“帧内/跨帧”注意力在 DUSt3R 系与视频 Transformer（如 TimeSformer 的 divided space-time attention，本次未下载核对）中都已常见，VGGT 主要是重新组合。"
+    }
+  ],
+  "assessment": "incremental",
+  "rationale": "截止前的 DUSt3R 已有“视图内 self-attention 与跨视图 cross-attention 交替、第一视图作参考坐标系且分支不同”的设计，MV-DUSt3R（同期，2024-12-09）把它推广到任意 N 视图并用独立的参考视图 decoder 区分参考帧。VGGT 的实际差异在于：跨帧交互改为对所有帧 token 的全局 self-attention、完全不用 cross-attention、参考帧仅靠一组专用相机/寄存器 token 区分、主干权重共享。这些差异是真实的，VGGT 自身消融也支持（Alternating 优于 global-only 和 cross-attention 变体），但属于对已有交替结构的简化和重组，而不是全新机制。全局 self-attention-only 的同期工作 Fast3R 未能读到全文，所以“交替”相对“纯全局”这一点的新意没有与原文对证。综合判为 incremental（增量但有用），不构成 overlap，因为双方原文在跨视图算子（cross vs. joint self-attention）和参考帧机制（独立权重 vs. token）上明确不同。",
+  "uncertainty": "Fast3R（2501.13928，同期，被 VGGT 引用）PDF 超过 fetch_arxiv.py 的 20MB 上限，下载失败，未读全文；其“纯全局注意力”设计只能间接判断（VGGT 消融中的 Global Self-Attention Only 变体）。Semantic Scholar 和 OpenAlex 各有一次 429，DBLP 返回 JSONDecodeError；多词 arXiv 查询返回 0 条，可能是查询语法过严。简报称 VGGT 引用了 TimeSformer，但在快照 paper.txt 中没检索到 'TimeSformer'/'space-time'，未核实；视频 Transformer 的分解时空注意力（TimeSformer/ViViT）作为通用机制前作，本次未下载比较。GS-LRM、FreeSplatter、FLARE、Light3R-SfM 等也可能用全局多视图 self-attention 或参考视图 token，均未读。",
+  "coverage": "覆盖：任务术语（多视图 3D 重建 + 交替/全局注意力）、机制术语（factorized intra/inter-frame attention）、替代说法（reference view token、frame/global attention），数据源包括 arXiv、Semantic Scholar、OpenAlex、DBLP，并对 MV-DUSt3R+ 做了参考文献追溯；共 11 次检索请求，精读 MV-DUSt3R+ v1 与 DUSt3R v3（截止前最新版）的方法部分。未覆盖：Fast3R 全文、视频 Transformer 分解注意力文献、LRM 系（GS-LRM/PF-LRM/LVSM）全文、引用追溯的被引方向（semantic-cites）。"
+}

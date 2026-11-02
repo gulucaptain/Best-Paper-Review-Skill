@@ -1,0 +1,28 @@
+{
+  "created_at": "2026-10-31T08:03:32+00:00",
+  "cutoff": "2025-03-14",
+  "confidential": false,
+  "tasks": [
+    {
+      "id": "C1",
+      "brief": "C1.brief.md",
+      "result": "C1.json"
+    },
+    {
+      "id": "C2",
+      "brief": "C2.brief.md",
+      "result": "C2.json"
+    },
+    {
+      "id": "C3",
+      "brief": "C3.brief.md",
+      "result": "C3.json"
+    },
+    {
+      "id": "C4",
+      "brief": "C4.brief.md",
+      "result": "C4.json"
+    }
+  ],
+  "instruction": "为每个任务启动一个子代理（同一轮并行），提示词为 brief 全文。"
+}

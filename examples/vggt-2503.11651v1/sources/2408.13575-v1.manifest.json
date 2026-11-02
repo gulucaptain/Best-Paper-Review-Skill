@@ -1,0 +1,52 @@
+{
+  "manifest_version": 1,
+  "generated_by": "extract_pdf.py",
+  "tool": "pdftotext version 24.02.0",
+  "pdf_sha256": "4a3fde2408f65f480f5ef37e47f25bb98e65500c1e90fbecc66723993fe9160b",
+  "pdf_name": "2408.13575-v1.pdf",
+  "pages": [
+    {
+      "page": 1,
+      "start": 0,
+      "end": 4483
+    },
+    {
+      "page": 2,
+      "start": 4485,
+      "end": 9137
+    },
+    {
+      "page": 3,
+      "start": 9139,
+      "end": 13754
+    },
+    {
+      "page": 4,
+      "start": 13756,
+      "end": 17298
+    },
+    {
+      "page": 5,
+      "start": 17300,
+      "end": 22905
+    },
+    {
+      "page": 6,
+      "start": 22907,
+      "end": 23880
+    }
+  ],
+  "page_count": 6,
+  "text_sha256": "6df54796b99c9f0147d6e4924e3ab78f779a83b396cb6c1fc9369354bf8c0e0f",
+  "low_text_pages": [],
+  "injection_hits": [],
+  "created_at": "2026-10-31T08:04:47+00:00",
+  "url": "https://arxiv.org/abs/2408.13575v1",
+  "arxiv_id": "2408.13575",
+  "version": "v1",
+  "public_date": "2024-08-24",
+  "title": "Can Visual Foundation Models Achieve Long-term Point Tracking?",
+  "all_versions": {
+    "v1": "2024-08-24"
+  }
+}

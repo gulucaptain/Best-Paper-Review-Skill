@@ -1,0 +1,127 @@
+{
+  "manifest_version": 1,
+  "generated_by": "extract_pdf.py",
+  "tool": "pdftotext version 24.02.0",
+  "pdf_sha256": "dd034aa252f1ad6f4fe53f850af63cfe1206c114636c9a06810e06682b958ee7",
+  "pdf_name": "2410.24207-v1.pdf",
+  "pages": [
+    {
+      "page": 1,
+      "start": 0,
+      "end": 3106
+    },
+    {
+      "page": 2,
+      "start": 3108,
+      "end": 7744
+    },
+    {
+      "page": 3,
+      "start": 7746,
+      "end": 12367
+    },
+    {
+      "page": 4,
+      "start": 12369,
+      "end": 15990
+    },
+    {
+      "page": 5,
+      "start": 15992,
+      "end": 20706
+    },
+    {
+      "page": 6,
+      "start": 20708,
+      "end": 25216
+    },
+    {
+      "page": 7,
+      "start": 25218,
+      "end": 30202
+    },
+    {
+      "page": 8,
+      "start": 30204,
+      "end": 33124
+    },
+    {
+      "page": 9,
+      "start": 33126,
+      "end": 35823
+    },
+    {
+      "page": 10,
+      "start": 35825,
+      "end": 38985
+    },
+    {
+      "page": 11,
+      "start": 38987,
+      "end": 42362
+    },
+    {
+      "page": 12,
+      "start": 42364,
+      "end": 45412
+    },
+    {
+      "page": 13,
+      "start": 45414,
+      "end": 48898
+    },
+    {
+      "page": 14,
+      "start": 48900,
+      "end": 53046
+    },
+    {
+      "page": 15,
+      "start": 53048,
+      "end": 57311
+    },
+    {
+      "page": 16,
+      "start": 57313,
+      "end": 61612
+    },
+    {
+      "page": 17,
+      "start": 61614,
+      "end": 63423
+    },
+    {
+      "page": 18,
+      "start": 63425,
+      "end": 63579
+    },
+    {
+      "page": 19,
+      "start": 63581,
+      "end": 63736
+    },
+    {
+      "page": 20,
+      "start": 63738,
+      "end": 63892
+    },
+    {
+      "page": 21,
+      "start": 63894,
+      "end": 64011
+    }
+  ],
+  "page_count": 21,
+  "text_sha256": "7887ac56ad95ac0a76a228f5f5bc9036c9d1499daef4b8894fbd841bcb2ac620",
+  "low_text_pages": [],
+  "injection_hits": [],
+  "created_at": "2026-10-31T08:04:45+00:00",
+  "url": "https://arxiv.org/abs/2410.24207v1",
+  "arxiv_id": "2410.24207",
+  "version": "v1",
+  "public_date": "2024-10-31",
+  "title": "No Pose, No Problem: Surprisingly Simple 3D Gaussian Splats from Sparse Unposed Images",
+  "all_versions": {
+    "v1": "2024-10-31"
+  }
+}

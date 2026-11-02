@@ -1,0 +1,19 @@
+{"paper_title": "VGGT: Visual Geometry Grounded Transformer (arXiv 2503.11651v1)", "cutoff": "2025-03-14", "confidential": false,
+ "contributions": [
+  {"id": "C1", "claim": "单一前馈网络一次前向，从 1 到数百张图像联合预测相机内外参、深度图、点图和点轨迹，无需后处理优化",
+   "mechanism": "feed-forward multi-view network that jointly regresses camera parameters, depth maps, viewpoint-invariant point maps (first-camera frame) and tracking features for an arbitrary number of views in one pass, without global alignment / bundle adjustment",
+   "keywords": ["feed-forward multi-view 3D reconstruction", "pointmap regression many views", "pose-free reconstruction single forward pass", "camera and depth joint prediction transformer"],
+   "known_refs": ["2312.14132 (DUSt3R)", "2406.09756 (MASt3R)", "VGGSfM", "Fast3R", "MV-DUSt3R+", "CUT3R", "FLARE"]},
+  {"id": "C2", "claim": "交替注意力（Alternating-Attention）：逐帧自注意力与全局自注意力交替，仅用自注意力，配合区分首帧的相机/寄存器 token，3D 归纳偏置极少",
+   "mechanism": "transformer over DINO patch tokens of all frames that alternates frame-wise self-attention and global (all-frames) self-attention layers (24 pairs), no cross-attention; learnable camera token and register tokens, with a distinct set for the first (reference) frame",
+   "keywords": ["alternating frame-wise global attention multi-view", "factorized attention multi-view transformer", "reference frame token", "intra-frame inter-frame attention 3D"],
+   "known_refs": ["2501.13928 (Fast3R)", "2412.06974 (MV-DUSt3R+)", "LRM", "video transformers with divided space-time attention (TimeSformer)"]},
+  {"id": "C3", "claim": "过完备多任务监督（相机、深度、点图、轨迹）能提升精度；推理时用预测的深度+相机反投影得到的点云优于直接点图头",
+   "mechanism": "training with redundant/over-complete targets that are related in closed form (camera, depth, pointmap, tracks) improves accuracy; at test time unprojecting predicted depth with predicted cameras beats the dedicated pointmap head",
+   "keywords": ["multi-task 3D supervision redundant outputs", "depth and pose vs pointmap", "over-complete geometry prediction"],
+   "known_refs": ["2501.12387 (CUT3R)", "2502.12138 (FLARE)", "2312.14132 (DUSt3R)"]},
+  {"id": "C4", "claim": "预训练 VGGT 作为特征骨干，可提升动态场景点跟踪与前馈新视角合成等下游任务",
+   "mechanism": "using a 3D-geometry-pretrained multi-view transformer as the feature backbone (fine-tuned) for dynamic point tracking (CoTracker-style head) and feed-forward novel view synthesis",
+   "keywords": ["3D pretrained backbone point tracking", "geometry foundation model features downstream", "feed-forward novel view synthesis backbone"],
+   "known_refs": ["CoTracker", "LVSM", "DUSt3R features for downstream", "MASt3R"]}
+ ]}

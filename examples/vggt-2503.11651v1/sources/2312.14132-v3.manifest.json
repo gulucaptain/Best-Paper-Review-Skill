@@ -1,0 +1,139 @@
+{
+  "manifest_version": 1,
+  "generated_by": "extract_pdf.py",
+  "tool": "pdftotext version 24.02.0",
+  "pdf_sha256": "400fea3f874aed6a9570a0651a701c2a3c635dcfbc2159348e04e83013a0099a",
+  "pdf_name": "2312.14132-v3.pdf",
+  "pages": [
+    {
+      "page": 1,
+      "start": 0,
+      "end": 2717
+    },
+    {
+      "page": 2,
+      "start": 2719,
+      "end": 8794
+    },
+    {
+      "page": 3,
+      "start": 8796,
+      "end": 14585
+    },
+    {
+      "page": 4,
+      "start": 14587,
+      "end": 19276
+    },
+    {
+      "page": 5,
+      "start": 19278,
+      "end": 24490
+    },
+    {
+      "page": 6,
+      "start": 24492,
+      "end": 29440
+    },
+    {
+      "page": 7,
+      "start": 29442,
+      "end": 34868
+    },
+    {
+      "page": 8,
+      "start": 34870,
+      "end": 40667
+    },
+    {
+      "page": 9,
+      "start": 40669,
+      "end": 45054
+    },
+    {
+      "page": 10,
+      "start": 45056,
+      "end": 46000
+    },
+    {
+      "page": 11,
+      "start": 46002,
+      "end": 46753
+    },
+    {
+      "page": 12,
+      "start": 46755,
+      "end": 47554
+    },
+    {
+      "page": 13,
+      "start": 47556,
+      "end": 47823
+    },
+    {
+      "page": 14,
+      "start": 47825,
+      "end": 53518
+    },
+    {
+      "page": 15,
+      "start": 53520,
+      "end": 58627
+    },
+    {
+      "page": 16,
+      "start": 58629,
+      "end": 63589
+    },
+    {
+      "page": 17,
+      "start": 63591,
+      "end": 68059
+    },
+    {
+      "page": 18,
+      "start": 68061,
+      "end": 73946
+    },
+    {
+      "page": 19,
+      "start": 73948,
+      "end": 79967
+    },
+    {
+      "page": 20,
+      "start": 79969,
+      "end": 85882
+    },
+    {
+      "page": 21,
+      "start": 85884,
+      "end": 91728
+    },
+    {
+      "page": 22,
+      "start": 91730,
+      "end": 97836
+    },
+    {
+      "page": 23,
+      "start": 97838,
+      "end": 98642
+    }
+  ],
+  "page_count": 23,
+  "text_sha256": "1c569d57aa375896bd596d700a631edd81e2cabc2ce3be24acc479cf12706505",
+  "low_text_pages": [],
+  "injection_hits": [],
+  "created_at": "2026-10-31T08:05:22+00:00",
+  "url": "https://arxiv.org/abs/2312.14132v3",
+  "arxiv_id": "2312.14132",
+  "version": "v3",
+  "public_date": "2024-12-02",
+  "title": "DUSt3R: Geometric 3D Vision Made Easy",
+  "all_versions": {
+    "v1": "2023-12-21",
+    "v2": "2024-10-26",
+    "v3": "2024-12-02"
+  }
+}

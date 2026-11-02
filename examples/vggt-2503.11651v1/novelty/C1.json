@@ -1,0 +1,95 @@
+{
+  "contribution_id": "C1",
+  "searches": [
+    {"provider": "arxiv", "query": "feed-forward multi-view 3D reconstruction pointmap many views", "file": "search/C1-arxiv-1.json", "hits": 0, "error": null},
+    {"provider": "semantic", "query": "feed-forward multi-view 3D reconstruction pointmap many views", "file": "search/C1-s2-1.json", "hits": 0, "error": "HTTP 429"},
+    {"provider": "arxiv", "query": "pose-free reconstruction camera pose and depth single forward pass transformer", "file": "search/C1-arxiv-2.json", "hits": 0, "error": null},
+    {"provider": "openalex", "query": "pose-free multi-view reconstruction camera depth single forward pass transformer", "file": "search/C1-openalex-2.json", "hits": 0, "error": "HTTP 429 Too Many Requests"},
+    {"provider": "arxiv", "query": "reconstruct thousand images one forward pass without global alignment", "file": "search/C1-arxiv-3.json", "hits": 0, "error": null},
+    {"provider": "semantic", "query": "structure from motion end-to-end feed-forward without bundle adjustment unposed images", "file": "search/C1-s2-3.json", "hits": 0, "error": "HTTP 429"},
+    {"provider": "arxiv", "query": "Fast3R", "file": "search/C1-arxiv-4.json", "hits": 2, "error": null},
+    {"provider": "dblp", "query": "multi-view pointmap reconstruction", "file": "search/C1-dblp-1.json", "hits": 0, "error": "JSONDecodeError (empty/non-JSON response)"},
+    {"provider": "arxiv", "query": "feed-forward pose-free reconstruction", "file": "search/C1-arxiv-5.json", "hits": 6, "error": null},
+    {"provider": "arxiv", "query": "multi-view DUSt3R", "file": "search/C1-arxiv-6.json", "hits": 13, "error": null},
+    {"provider": "semantic-cites", "query": "arXiv:2312.14132 (DUSt3R citations)", "file": "search/C1-cites.json", "hits": 20, "error": "returned only most recent citers (all after cutoff); unusable for prior-art discovery"},
+    {"provider": "merge", "query": "C1-*.json --before 2025-03-14", "file": "search/C1-candidates.json", "hits": 39, "error": null}
+  ],
+  "candidates": [
+    {"title": "MV-DUSt3R+: Single-Stage Scene Reconstruction from Sparse Views In 2 Seconds", "arxiv_id": "2412.06974", "version": "v1", "public_date": "2024-12-09", "read": true, "source_id": "2412.06974-v1", "relevance": "high", "concurrent": false},
+    {"title": "Fast3R: Towards 3D Reconstruction of 1000+ Images in One Forward Pass", "arxiv_id": "2501.13928", "version": "v1", "public_date": "2025-01-23", "read": false, "source_id": null, "relevance": "high", "concurrent": true},
+    {"title": "Continuous 3D Perception Model with Persistent State (CUT3R)", "arxiv_id": "2501.12387", "version": "v1", "public_date": "2025-01-21", "read": true, "source_id": "2501.12387-v1", "relevance": "high", "concurrent": true},
+    {"title": "FLARE: Feed-forward Geometry, Appearance and Camera Estimation from Uncalibrated Sparse Views", "arxiv_id": "2502.12138", "version": "v3 (latest pre-cutoff per fetch attempt)", "public_date": "2025-02-17", "read": false, "source_id": null, "relevance": "medium", "concurrent": true},
+    {"title": "MUSt3R: Multi-view Network for Stereo 3D Reconstruction", "arxiv_id": "2503.01661", "version": "v1", "public_date": "2025-03-03", "read": false, "source_id": null, "relevance": "medium", "concurrent": true}
+  ],
+  "sources": [
+    {
+      "id": "2412.06974-v1",
+      "role": "comparator",
+      "path": "sources/2412.06974-v1.txt",
+      "manifest": "sources/2412.06974-v1.manifest.json",
+      "sha256": "91fe566c9727c1e4d516a0584c4d71fa42bb33c991dd910cc6dd881229f3d6a9",
+      "url": "https://arxiv.org/abs/2412.06974v1",
+      "version": "v1",
+      "arxiv_id": "2412.06974",
+      "public_date": "2024-12-09",
+      "title": "MV-DUSt3R+: Single-Stage Scene Reconstruction from Sparse Views In 2 Seconds",
+      "date_verified": {"method": "arxiv-abs-history", "value": "2024-12-09", "url": "https://arxiv.org/abs/2412.06974", "checked_at": "2026-10-31T08:04:37+00:00"}
+    },
+    {
+      "id": "2501.12387-v1",
+      "role": "comparator",
+      "path": "sources/2501.12387-v1.txt",
+      "manifest": "sources/2501.12387-v1.manifest.json",
+      "sha256": "bdfb63f5f6fd24652f07065d50238a339ba6e99d91647fb736ab350fbea7b813",
+      "url": "https://arxiv.org/abs/2501.12387v1",
+      "version": "v1",
+      "arxiv_id": "2501.12387",
+      "public_date": "2025-01-21",
+      "title": "Continuous 3D Perception Model with Persistent State",
+      "date_verified": {"method": "arxiv-abs-history", "value": "2025-01-21", "url": "https://arxiv.org/abs/2501.12387", "checked_at": "2026-10-31T08:04:40+00:00"}
+    }
+  ],
+  "comparisons": [
+    {
+      "comparator_id": "2412.06974-v1",
+      "common_mechanism": "单一前馈 Transformer，所有输入视图联合处理（跨视图注意力），直接回归以参考视图（推理时为第 1 张图）相机坐标系表示的逐像素点图，不需要 DUSt3R 式全局对齐；同样从 DUSt3R 继承点图表示与置信度加权回归损失。",
+      "differences": "MV-DUSt3R+ 只回归点图（外加可选的 Gaussian 头），相机内参用 Weiszfeld、位姿用 RANSAC+PnP 从点图事后求解，即相机不是网络直接输出；不输出独立深度图头和跟踪特征；采用参考视图/源视图非对称解码块和多参考路径的 Cross-Reference-View 块，而 VGGT 用交替的帧内/全局注意力并直接回归相机参数。分辨率 224×224，训练固定 8 视图（二阶段 4–12 视图），定量评测 4–24 视图，100 视图只给定性结果；训练数据仅室内场景数据集（ScanNet/ScanNet++/HM3D/Gibson）。",
+      "problem": "无位姿、无标定的稀疏多视图场景重建，同时做多视图位姿估计和新视角合成；与 C1 的问题设定（任意数量无位姿图像的前馈几何推断）基本相同，但 C1 还加了跟踪，覆盖的视图数也更多。",
+      "assumptions": "相机位姿估计时假设所有视图共享内参、主点在图像中心、像素为方形；场景以室内为主。",
+      "guarantee_or_insight": "洞见：单阶段多视图联合推理可以修正成对重建+全局优化无法纠正的错误匹配；参考视图的选择影响质量，多参考路径能缓解。没有理论保证。",
+      "resources": "64 张 H100，训练 180 小时，以 DUSt3R 权重初始化；训练数据为 DUSt3R 训练数据的子集（4 个室内数据集）。",
+      "manuscript_side": "VGGT 把 MV-DUSt3R 列为同期工作 [111]，并在 Co3D/RealEstate10K 位姿估计上与之对比：\"Some concurrent works [111, 127, 141, 156] explore replacing DUSt3R's test-time optimization with neural networks\"（paper.txt p.2）。VGGT 的增量在于：网络直接输出相机内外参，并在同一前向中输出深度、点图和跟踪特征。",
+      "comparator_quotes": [
+        {"quote": "To handle more views, reduce errors, and improve inference time, we propose the fast single-stage feed-forward network MV-DUSt3R.", "page": 1},
+        {"quote": "We use the Weiszfeld algorithm (Plastria, 2011) to estimate camera intrinsics, and RANSAC (Fischler and Bolles, 1981) with PnP (Lepetit et al., 2009) to estimate camera pose", "page": 10},
+        {"quote": "We process input views at resolution 224 × 224.", "page": 9},
+        {"quote": "We utilize 64 Nvidia H100 GPUs for the model training.", "page": 9},
+        {"quote": "MV-DUSt3R+ generalizes to 100-view input remarkably well on ScanNet", "page": 17}
+      ],
+      "delta_significance": "“一次前向处理多视图、无需全局对齐、点图位于参考相机坐标系”这一核心范式在 MV-DUSt3R+ 中已经存在，且它比截止日期早 3 个多月，不属于同期。C1 剩下的新意在于：相机参数由网络直接回归（不依赖 PnP/RANSAC）；深度、相机、点图、跟踪在一个模型中联合预测；规模化训练与泛化（大规模多样数据，更高分辨率，1 到数百张视图）。这些差异有用，但属于增量性质。",
+      "strongest_counterargument": "MV-DUSt3R+ 从点图用 PnP 求相机只是一个轻量的确定性步骤，可以认为与“无后处理”实质等价，因此 C1 的“单前馈、多视图、无全局对齐”主张相对它几乎没有新意；VGGT 的差异主要体现在任务头数量和训练规模上。反过来，VGGT 一方可以指出：直接预测相机、加上多任务联合监督是其报告的性能提升来源之一（论文消融），并非只是工程放大。"
+    },
+    {
+      "comparator_id": "2501.12387-v1",
+      "common_mechanism": "前馈 Transformer，无需已知内外参，直接从网络头输出每帧相机参数（pose token 经 MLP 输出内参和外参）以及位于公共世界坐标系的逐像素点图，不做全局对齐；训练用多数据集混合，监督为尺度归一化的点图回归。",
+      "differences": "CUT3R 是递归/在线模型：维护持久状态 token，逐帧读写状态，每次前向只处理一帧，而不是一次前向联合处理全部视图；作者承认长序列会漂移。不输出跟踪特征；支持动态场景、metric scale 和 raymap 查询未观测视角。VGGT 则对全部帧做全局注意力，一次性联合推断。",
+      "problem": "在线、连续的 3D 感知（视频流或照片集），包括相机估计、视频深度和动态场景重建；与 C1 的离线批量多视图设定有部分重叠。",
+      "assumptions": "输入按顺序以流的形式到来；未做全局对齐，长序列存在漂移风险。",
+      "guarantee_or_insight": "洞见：持久状态可以把在线增量重建与先验推断（单张图、未观测区域）统一起来。没有理论保证。",
+      "resources": "8 张 A100 80G，训练数据为 32 个数据集。",
+      "manuscript_side": "VGGT 把 CUT3R 列为同期工作 [127]，并在位姿估计表中对比（paper.txt p.2、p.7）。",
+      "comparator_quotes": [
+        {"quote": "including an estimate of that view's dense 3D geometry (as a pointmap; a 3D point per-pixel in a world coordinate frame) and camera parameters (both intrinsics and extrinsics)", "page": 2},
+        {"quote": "As with many online methods, our approach may eventually drift over very long sequences due to the absence of global alignment.", "page": 9},
+        {"quote": "We train our model on eight A100 NVIDIA GPUs each with 80G memory.", "page": 5},
+        {"quote": "We train our method on a diverse set of 32 datasets", "page": 5}
+      ],
+      "delta_significance": "CUT3R 已经是“网络直接输出相机内外参+世界坐标点图，无全局对齐”，削弱了 C1 中“直接预测相机”这一点的独特性；但它是同期工作（截止前约 7 周），而且是顺序递归推理，不是一次前向的全局联合推理，C1 的“所有视图一次联合推断”仍与之有区别。",
+      "strongest_counterargument": "把 CUT3R 的递归状态看作对全部帧的一种（因果）联合推理，再与 MV-DUSt3R+ 的单前向多视图点图合起来看，VGGT 的组成部分在截止前都已各自出现；C1 更像是一个“组合 + 规模化”贡献。不过同期工作按规则不应用来否定原创性。"
+    }
+  ],
+  "assessment": "incremental",
+  "rationale": "截止日期 3 个月之前的 MV-DUSt3R+（2024-12-09）已经实现“单一前馈网络一次处理任意数量视图、回归参考视图坐标系点图、无需全局对齐”，C1 的核心范式因此并非首创。但 MV-DUSt3R+ 的相机由 PnP/RANSAC 事后求解，不输出深度和跟踪，分辨率、训练视图数和数据域也都有限；C1 在同一前向中直接回归相机内外参，并联合输出深度、点图和跟踪，这是实质而有用的扩展。CUT3R、Fast3R、FLARE、MUSt3R 都是截止前 3 个月内的同期工作，其中 CUT3R 也直接输出相机，但采用递归在线推理，和一次前向全局联合推理有区别。综合来看，评为 incremental（增量但有用），不构成 overlap；它的主要价值在于多任务联合预测、直接相机回归和规模化，而不在“前馈多视图无全局对齐”这一想法本身。",
+  "uncertainty": "Fast3R（2501.13928，同期，与 C1 最接近之一）和 FLARE（2502.12138）的 PDF 超过 fetch_arxiv.py 的 20MB 上限，下载失败，没读全文，对它们的判断只基于 arXiv 摘要（Fast3R 摘要称“forwards N images in a single forward pass, bypassing the need for iterative alignment”）。Semantic Scholar 和 OpenAlex 多次返回 429，DBLP 返回非 JSON；semantic-cites 只返回截止日期之后的施引文献，没有完成有效的引用追溯。还没有核实 VGGT 消融中直接相机回归的具体收益，所以“直接回归相机比 PnP 有实质价值”这一点仍待主审稿人确认。",
+  "coverage": "覆盖：arXiv 关键词检索（任务术语、机制术语、替代说法各两条以上，其中长查询返回 0 条，短查询有效），以及从论文已引用的 DUSt3R/MV-DUSt3R/Fast3R 出发的定向检索；全文精读 MV-DUSt3R+ v1 和 CUT3R v1 的方法、实现与附录。未覆盖：Semantic Scholar/OpenAlex/DBLP 的有效结果（限流或报错）；Fast3R、FLARE、MUSt3R、Spann3R 的全文；VGGSfM（带 BA 的可微 SfM）以及 PF-LRM、LRM 类物体级位姿+形状联合预测方法只在候选列表层面看到，没有比较；非 arXiv 期刊/会议文献基本未覆盖。"
+}

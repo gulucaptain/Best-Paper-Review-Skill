@@ -1,0 +1,273 @@
+{
+  "contribution_id": "C4",
+  "searches": [
+    {
+      "provider": "arxiv",
+      "query": "3D pretrained backbone point tracking",
+      "file": "search/C4-arxiv-1.json",
+      "hits": 1,
+      "error": null
+    },
+    {
+      "provider": "semantic",
+      "query": "3D foundation model features improve point tracking",
+      "file": "search/C4-s2-1.json",
+      "hits": 20,
+      "error": null
+    },
+    {
+      "provider": "arxiv",
+      "query": "DUSt3R features downstream tasks feed-forward novel view synthesis",
+      "file": "search/C4-arxiv-2.json",
+      "hits": 0,
+      "error": null
+    },
+    {
+      "provider": "openalex",
+      "query": "geometry foundation model features downstream novel view synthesis",
+      "file": "search/C4-openalex-1.json",
+      "hits": 0,
+      "error": "HTTP 429 Too Many Requests"
+    },
+    {
+      "provider": "arxiv",
+      "query": "MASt3R pretrained encoder tracking dynamic scenes",
+      "file": "search/C4-arxiv-3.json",
+      "hits": 0,
+      "error": null
+    },
+    {
+      "provider": "semantic",
+      "query": "multi-view geometry pretraining transfer novel view synthesis Gaussian splatting from DUSt3R",
+      "file": "search/C4-s2-2.json",
+      "hits": 0,
+      "error": "HTTP 429 Too Many Requests"
+    },
+    {
+      "provider": "arxiv",
+      "query": "MASt3R initialization feed-forward Gaussian splatting",
+      "file": "search/C4-arxiv-4.json",
+      "hits": 0,
+      "error": null
+    },
+    {
+      "provider": "arxiv",
+      "query": "visual foundation models point tracking",
+      "file": "search/C4-arxiv-5.json",
+      "hits": 8,
+      "error": null
+    },
+    {
+      "provider": "dblp",
+      "query": "3D awareness foundation model features Gaussian splatting probing",
+      "file": "search/C4-dblp-1.json",
+      "hits": 0,
+      "error": "JSONDecodeError (empty response)"
+    },
+    {
+      "provider": "dblp",
+      "query": "pose-free feed-forward Gaussian splatting",
+      "file": "search/C4-dblp-2.json",
+      "hits": 0,
+      "error": "JSONDecodeError (empty response)"
+    },
+    {
+      "provider": "arxiv",
+      "query": "3D Gaussian splats from sparse unposed images",
+      "file": "search/C4-arxiv-6.json",
+      "hits": 6,
+      "error": null
+    },
+    {
+      "provider": "arxiv",
+      "query": "probing visual foundation models Gaussian splatting 3D awareness",
+      "file": "search/C4-arxiv-7.json",
+      "hits": 1,
+      "error": null
+    }
+  ],
+  "candidates": [
+    {
+      "title": "No Pose, No Problem: Surprisingly Simple 3D Gaussian Splats from Sparse Unposed Images (NoPoSplat)",
+      "arxiv_id": "2410.24207",
+      "version": "v1",
+      "public_date": "2024-10-31",
+      "read": true,
+      "source_id": "2410.24207-v1",
+      "relevance": "high",
+      "concurrent": false
+    },
+    {
+      "title": "Feat2GS: Probing Visual Foundation Models with Gaussian Splatting",
+      "arxiv_id": "2412.09606",
+      "version": "v1",
+      "public_date": "2024-12-12",
+      "read": true,
+      "source_id": "2412.09606-v1",
+      "relevance": "medium",
+      "concurrent": true
+    },
+    {
+      "title": "Can Visual Foundation Models Achieve Long-term Point Tracking?",
+      "arxiv_id": "2408.13575",
+      "version": "v1",
+      "public_date": "2024-08-24",
+      "read": true,
+      "source_id": "2408.13575-v1",
+      "relevance": "medium",
+      "concurrent": false
+    },
+    {
+      "title": "PF3plat: Pose-Free Feed-Forward 3D Gaussian Splatting",
+      "arxiv_id": "2410.22128",
+      "version": "v1",
+      "public_date": "2024-10-29",
+      "read": false,
+      "source_id": null,
+      "relevance": "medium",
+      "concurrent": false
+    },
+    {
+      "title": "Splatt3R: Zero-shot Gaussian Splatting from Uncalibrated Image Pairs (frozen MASt3R backbone; seen only via NoPoSplat's description, not in our search records)",
+      "arxiv_id": "2408.13912",
+      "version": null,
+      "public_date": null,
+      "read": false,
+      "source_id": null,
+      "relevance": "medium",
+      "concurrent": false
+    }
+  ],
+  "sources": [
+    {
+      "id": "2410.24207-v1",
+      "role": "comparator",
+      "path": "sources/2410.24207-v1.txt",
+      "manifest": "sources/2410.24207-v1.manifest.json",
+      "sha256": "7887ac56ad95ac0a76a228f5f5bc9036c9d1499daef4b8894fbd841bcb2ac620",
+      "url": "https://arxiv.org/abs/2410.24207v1",
+      "version": "v1",
+      "arxiv_id": "2410.24207",
+      "public_date": "2024-10-31",
+      "title": "No Pose, No Problem: Surprisingly Simple 3D Gaussian Splats from Sparse Unposed Images",
+      "date_verified": {
+        "method": "arxiv-abs-history",
+        "value": "2024-10-31",
+        "url": "https://arxiv.org/abs/2410.24207",
+        "checked_at": "2026-10-31T08:04:45+00:00"
+      }
+    },
+    {
+      "id": "2412.09606-v1",
+      "role": "comparator",
+      "path": "sources/2412.09606-v1.txt",
+      "manifest": "sources/2412.09606-v1.manifest.json",
+      "sha256": "72a7413f23a57296a2c29f4c237a939162d39b137e840ff7510502b759a8055a",
+      "url": "https://arxiv.org/abs/2412.09606v1",
+      "version": "v1",
+      "arxiv_id": "2412.09606",
+      "public_date": "2024-12-12",
+      "title": "Feat2GS: Probing Visual Foundation Models with Gaussian Splatting",
+      "date_verified": {
+        "method": "arxiv-abs-history",
+        "value": "2024-12-12",
+        "url": "https://arxiv.org/abs/2412.09606",
+        "checked_at": "2026-10-31T08:04:46+00:00"
+      }
+    },
+    {
+      "id": "2408.13575-v1",
+      "role": "comparator",
+      "path": "sources/2408.13575-v1.txt",
+      "manifest": "sources/2408.13575-v1.manifest.json",
+      "sha256": "6df54796b99c9f0147d6e4924e3ab78f779a83b396cb6c1fc9369354bf8c0e0f",
+      "url": "https://arxiv.org/abs/2408.13575v1",
+      "version": "v1",
+      "arxiv_id": "2408.13575",
+      "public_date": "2024-08-24",
+      "title": "Can Visual Foundation Models Achieve Long-term Point Tracking?",
+      "date_verified": {
+        "method": "arxiv-abs-history",
+        "value": "2024-08-24",
+        "url": "https://arxiv.org/abs/2408.13575",
+        "checked_at": "2026-10-31T08:04:47+00:00"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "comparator_id": "2410.24207-v1",
+      "common_mechanism": "用 3D 几何预训练的多视图 Transformer（MASt3R/DUSt3R 的 ViT 编码器-解码器）初始化并端到端微调，做无相机位姿输入的前馈新视角合成。",
+      "differences": "NoPoSplat 是双视图、输出显式 3D Gaussian 并经可微渲染监督；VGGT-NVS 仿照 LVSM 直接输出目标图像（无显式 3D 表示），支持多视图输入，骨干是 VGGT 自己的交替注意力 Transformer；VGGT 还把同一骨干迁移到动态点跟踪，NoPoSplat 不涉及跟踪。",
+      "problem": "NoPoSplat：稀疏（2 视图）无位姿场景级 NVS（RE10K/ACID）；VGGT：物体级 GSO 上的无输入位姿 NVS（LVSM 协议）+ TAP-Vid 动态跟踪。",
+      "assumptions": "NoPoSplat 需要已知/近似内参（文中讨论焦距鲁棒性），只用 RGB 监督；VGGT-NVS 不输入源图 Plücker 射线，目标视角相机给定。",
+      "guarantee_or_insight": "NoPoSplat 消融表明 3D 预训练权重仅带来小幅提升，CroCoV2 初始化也接近；即“3D 几何预训练作为 NVS 骨干”的收益此前已被测量且被认为不大。",
+      "resources": "NoPoSplat：RE10K/DL3DV，ViT-L 编码器 + ViT-B 解码器；VGGT：约 Objaverse 20% 规模的内部数据，1.2B 级骨干。",
+      "manuscript_side": "VGGT 原文：'We adapt the state-of-the-art CoTracker2 model [57] by substituting its backbone with our pretrained feature backbone.' (paper.txt p.10)；NVS 部分称 follow LVSM 并且 'we do not assume known camera parameters for the input frames' (p.9)。",
+      "comparator_quotes": [
+        {
+          "quote": "We initialize the encoder/decoder and Gaussian center head with the weights from MASt3R, while the remaining layers are initialized randomly.",
+          "page": 7
+        },
+        {
+          "quote": "The results in Tab. 6 demonstrate that our method, even when initialized without depth-supervised pre-trained weights, performs similarly to models initialized with DUSt3R and MASt3R.",
+          "page": 15
+        },
+        {
+          "quote": "However, we also find that using MASt3R pre-trained weights performs slightly better than others.",
+          "page": 15
+        }
+      ],
+      "delta_significance": "“3D 几何预训练骨干可用于前馈 NVS 微调”这一思路在 NoPoSplat 中已有先例（并且 VGGT 的 C4 段落未讨论 NoPoSplat 式初始化）。VGGT 的增量在于：一个骨干同时服务多视图 NVS 与动态跟踪，以及无显式 3D 表示的 LVSM 式解码。",
+      "strongest_counterargument": "NoPoSplat 只是“工程初始化”且自己证明了 3D 预训练不是关键，因此不构成“3D 基础模型作为通用下游骨干”的主张；VGGT 的主张是表示的通用性（跨 NVS 与跟踪），这在 NoPoSplat 中没有。但同理，VGGT 自己的 NVS 实验未与非 3D 预训练初始化做对照，也不能证明增益来自几何预训练。"
+    },
+    {
+      "comparator_id": "2412.09606-v1",
+      "common_mechanism": "把 DUSt3R/MASt3R 等视觉基础模型的特征作为 NVS 的输入骨干，通过读出层回归 3D Gaussian，用光度损失训练，从而评估/利用其 3D 感知。",
+      "differences": "Feat2GS 冻结 VFM、只训练浅层 MLP 读出（探测性质），并需要 DUSt3R 初始化位姿再做逐场景优化；VGGT 是微调整个骨干，前馈泛化、直接输出图像。",
+      "problem": "Feat2GS：探测 VFM 的几何/纹理感知（诊断性研究，也给出拼接特征的强基线）；VGGT：展示自身骨干的迁移能力。",
+      "assumptions": "Feat2GS 逐场景训练读出层、相机由 DUSt3R 估计并光度精化；VGGT 训练一个跨场景模型。",
+      "guarantee_or_insight": "Feat2GS 已发现点回归类 3D 预训练模型（MASt3R、DUSt3R）在几何模式下排名靠前，提供了“3D 预训练特征有利于 NVS 几何”的先验证据。",
+      "resources": "Feat2GS：多个公开 VFM、多种数据集（LLFF/DTU/DL3DV/MipNeRF360 等），计算量小。",
+      "manuscript_side": "VGGT p.9：'We now show that the VGGT pre-trained feature extractor can be reused in downstream tasks.'",
+      "comparator_quotes": [
+        {
+          "quote": "A shallow MLP readout layer then regresses the parameters of 3D Gaussians [40] from these features.",
+          "page": 2
+        },
+        {
+          "quote": "The top three performers in Geometry mode are RADIO > MASt3R > DUSt3R.",
+          "page": 7
+        }
+      ],
+      "delta_significance": "Feat2GS 是探测分析而非下游微调；与 VGGT 的贡献在设定上明显不同，只提供背景证据。距截止日期约 3 个月（2024-12-12），按规则勉强算作同期。",
+      "strongest_counterargument": "有人可以认为 Feat2GS 已经展示了“3D 预训练特征优于 2D 特征用于 NVS”，从而削弱 VGGT 结论的新意；但 Feat2GS 的结论是 RADIO 几何最好、3D 模型纹理较差，并不等价于 VGGT 的微调迁移主张。"
+    },
+    {
+      "comparator_id": "2408.13575-v1",
+      "common_mechanism": "把预训练视觉基础模型作为点跟踪（TAP-Vid）的特征骨干，在零样本/探测/LoRA 微调三种设置下评估。",
+      "differences": "该文只考察 2D 预训练模型（MAE、DINO/DINOv2、CLIP、SD、DeiT III、SAM），不含任何 3D 几何预训练模型；跟踪头是 TAPNet 式而非 CoTracker；VGGT 用 3D 几何预训练的多视图骨干替换 CoTracker2 骨干并整体微调。",
+      "problem": "相同问题：长时动态点跟踪（TAP-Vid DAVIS/Kinetics/Kubric）。",
+      "assumptions": "该文采用受限训练（LoRA、低容量探测）；VGGT 微调骨干，具体训练设定见其附录。",
+      "guarantee_or_insight": "已表明基础模型特征（DINOv2）可作为跟踪的强初始化，适配后可与有监督模型相当。",
+      "resources": "该文为 4 页 workshop 级研究，在 Kubric 上训练。",
+      "manuscript_side": "VGGT p.10：'We adapt the state-of-the-art CoTracker2 model [57] by substituting its backbone with our pretrained feature backbone.'",
+      "comparator_quotes": [
+        {
+          "quote": "DINOv2 achieves performance comparable to supervised models in adaptation settings, demonstrating its potential as a strong initialization for correspondence learning.",
+          "page": 1
+        },
+        {
+          "quote": "Rather than fine-tuning the entire model, we employ Low Rank Adaptation (LoRA) [14].",
+          "page": 3
+        }
+      ],
+      "delta_significance": "“基础模型骨干用于点跟踪”有先例，但“3D 几何预训练、多视图（非时序）骨干用于动态点跟踪”在检索到的截止前文献中未找到；这是 VGGT 在跟踪侧的实际差异。",
+      "strongest_counterargument": "把一个更大、训练数据更多的骨干换进 CoTracker 带来提升是可预期的；VGGT 没有与同等规模的 2D 骨干（如 DINOv2-L 换入 CoTracker2）做对照，无法把增益归因于 3D 几何预训练本身。"
+    }
+  ],
+  "assessment": "incremental",
+  "rationale": "把 3D 几何预训练的多视图 Transformer 作为骨干微调用于前馈 NVS，在 NoPoSplat（2024-10，用 MASt3R 权重初始化无位姿前馈 3DGS）中已有直接先例，且该文消融显示 3D 预训练只带来小幅收益。Feat2GS 已通过 NVS 探测表明 DUSt3R/MASt3R 特征几何感知较强，但属于冻结特征探测，设定不同。在点跟踪侧，已有工作用 2D 基础模型做跟踪骨干，但未检索到截止前用 3D 几何预训练多视图骨干换入 CoTracker 做动态跟踪的工作。因此 C4 不是全新范式，而是把“几何基础模型作为通用骨干”扩展到一个骨干同时服务 NVS（无显式 3D、LVSM 式）和动态跟踪的有用增量；它主要是能力展示，缺少同规模 2D 骨干对照，归因证据偏弱。",
+  "uncertainty": "OpenAlex 与 Semantic Scholar 第二次查询返回 429，DBLP 两次返回空/解析错误，arXiv 关键词检索召回很低（多条 0 结果），覆盖受限。Splatt3R、PF3plat 等未下载全文；未检索 CroCo v2 下游迁移、MonST3R、SpatialTracker 等可能相关工作的骨干复用。未做 CoTracker/LVSM 的引用追溯（预算用尽）。VGGT 跟踪微调细节在附录，未细读。",
+  "coverage": "覆盖：任务术语（point tracking + foundation model、feed-forward NVS）、机制术语（MASt3R/DUSt3R 初始化、3D pretrained backbone）、替代说法（probing 3D awareness、pose-free Gaussian splatting），使用 arXiv/Semantic Scholar/OpenAlex/DBLP 四源（后两者失败）。精读 NoPoSplat、Feat2GS、VFM 点跟踪探测三篇的截止前 v1。未覆盖：引用追溯、CroCo 系列下游迁移、4D/动态重建中复用 DUSt3R 骨干的工作（如 MonST3R）、截止前 3 个月内的其他同期工作。"
+}

@@ -1,0 +1,107 @@
+{
+  "manifest_version": 1,
+  "generated_by": "extract_pdf.py",
+  "tool": "pdftotext version 24.02.0",
+  "pdf_sha256": "5467dd822b4b45c0829115bbf361a5ca8c3319a930f4e0d861b6e9138d0d9db4",
+  "pdf_name": "2501.12387-v1.pdf",
+  "pages": [
+    {
+      "page": 1,
+      "start": 0,
+      "end": 3270
+    },
+    {
+      "page": 2,
+      "start": 3272,
+      "end": 8711
+    },
+    {
+      "page": 3,
+      "start": 8713,
+      "end": 14172
+    },
+    {
+      "page": 4,
+      "start": 14174,
+      "end": 18475
+    },
+    {
+      "page": 5,
+      "start": 18477,
+      "end": 23675
+    },
+    {
+      "page": 6,
+      "start": 23677,
+      "end": 28270
+    },
+    {
+      "page": 7,
+      "start": 28272,
+      "end": 30863
+    },
+    {
+      "page": 8,
+      "start": 30865,
+      "end": 34413
+    },
+    {
+      "page": 9,
+      "start": 34415,
+      "end": 40118
+    },
+    {
+      "page": 10,
+      "start": 40120,
+      "end": 45813
+    },
+    {
+      "page": 11,
+      "start": 45815,
+      "end": 51622
+    },
+    {
+      "page": 12,
+      "start": 51624,
+      "end": 57402
+    },
+    {
+      "page": 13,
+      "start": 57404,
+      "end": 63556
+    },
+    {
+      "page": 14,
+      "start": 63558,
+      "end": 65923
+    },
+    {
+      "page": 15,
+      "start": 65925,
+      "end": 71303
+    },
+    {
+      "page": 16,
+      "start": 71305,
+      "end": 74224
+    },
+    {
+      "page": 17,
+      "start": 74226,
+      "end": 76955
+    }
+  ],
+  "page_count": 17,
+  "text_sha256": "bdfb63f5f6fd24652f07065d50238a339ba6e99d91647fb736ab350fbea7b813",
+  "low_text_pages": [],
+  "injection_hits": [],
+  "created_at": "2026-10-31T08:05:20+00:00",
+  "url": "https://arxiv.org/abs/2501.12387v1",
+  "arxiv_id": "2501.12387",
+  "version": "v1",
+  "public_date": "2025-01-21",
+  "title": "Continuous 3D Perception Model with Persistent State",
+  "all_versions": {
+    "v1": "2025-01-21"
+  }
+}

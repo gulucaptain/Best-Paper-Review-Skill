@@ -1,0 +1,117 @@
+{
+  "manifest_version": 1,
+  "generated_by": "extract_pdf.py",
+  "tool": "pdftotext version 24.02.0",
+  "pdf_sha256": "5d7ab44d129172f39ef5918feb0014c4d041fd0e92f995d4dbbd7327a6e91d52",
+  "pdf_name": "paper.pdf",
+  "pages": [
+    {
+      "page": 1,
+      "start": 0,
+      "end": 2650
+    },
+    {
+      "page": 2,
+      "start": 2652,
+      "end": 8426
+    },
+    {
+      "page": 3,
+      "start": 8428,
+      "end": 12225
+    },
+    {
+      "page": 4,
+      "start": 12227,
+      "end": 15500
+    },
+    {
+      "page": 5,
+      "start": 15502,
+      "end": 18268
+    },
+    {
+      "page": 6,
+      "start": 18270,
+      "end": 23687
+    },
+    {
+      "page": 7,
+      "start": 23689,
+      "end": 28364
+    },
+    {
+      "page": 8,
+      "start": 28366,
+      "end": 32306
+    },
+    {
+      "page": 9,
+      "start": 32308,
+      "end": 37232
+    },
+    {
+      "page": 10,
+      "start": 37234,
+      "end": 42666
+    },
+    {
+      "page": 11,
+      "start": 42668,
+      "end": 47281
+    },
+    {
+      "page": 12,
+      "start": 47283,
+      "end": 52554
+    },
+    {
+      "page": 13,
+      "start": 52556,
+      "end": 56451
+    },
+    {
+      "page": 14,
+      "start": 56453,
+      "end": 62503
+    },
+    {
+      "page": 15,
+      "start": 62505,
+      "end": 68389
+    },
+    {
+      "page": 16,
+      "start": 68391,
+      "end": 73917
+    },
+    {
+      "page": 17,
+      "start": 73919,
+      "end": 79619
+    },
+    {
+      "page": 18,
+      "start": 79621,
+      "end": 85183
+    },
+    {
+      "page": 19,
+      "start": 85185,
+      "end": 90812
+    },
+    {
+      "page": 20,
+      "start": 90814,
+      "end": 91515
+    }
+  ],
+  "page_count": 20,
+  "text_sha256": "97a88c85d025eb6fb44600f399994554c37f91a1540200e1151b45e46f8c47be",
+  "low_text_pages": [],
+  "injection_hits": [],
+  "created_at": "2026-10-31T08:12:00+00:00",
+  "version": "arXiv v1",
+  "arxiv_id": "2503.11651",
+  "url": "https://arxiv.org/abs/2503.11651"
+}

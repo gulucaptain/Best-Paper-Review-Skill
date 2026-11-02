@@ -1,0 +1,242 @@
+{
+ "contribution_id": "C3",
+ "searches": [
+  {
+   "provider": "arxiv",
+   "query": "multi-task depth camera pose pointmap joint prediction transformer",
+   "file": "search/C3-arxiv-1.json",
+   "hits": 0,
+   "error": null
+  },
+  {
+   "provider": "semantic",
+   "query": "joint depth camera pose pointmap prediction multi-view feed-forward 3D reconstruction",
+   "file": "search/C3-s2-1.json",
+   "hits": 0,
+   "error": "HTTP 429"
+  },
+  {
+   "provider": "arxiv",
+   "query": "pointmap depth camera pose",
+   "file": "search/C3-arxiv-2.json",
+   "hits": 4,
+   "error": null
+  },
+  {
+   "provider": "openalex",
+   "query": "joint depth and camera pose estimation redundant multi-task supervision 3D reconstruction",
+   "file": "search/C3-openalex-1.json",
+   "hits": 0,
+   "error": "HTTP 429"
+  },
+  {
+   "provider": "openalex",
+   "query": "depth and ray map prediction versus point map feed-forward reconstruction",
+   "file": "search/C3-openalex-2.json",
+   "hits": 0,
+   "error": "HTTP 429"
+  },
+  {
+   "provider": "dblp",
+   "query": "depth pose pointmap",
+   "file": "search/C3-dblp-1.json",
+   "hits": 0,
+   "error": "JSONDecodeError"
+  },
+  {
+   "provider": "websearch",
+   "query": "arXiv feed-forward multi-view network predicts depth and camera pose jointly, unproject depth outperforms pointmap 2024",
+   "file": null,
+   "hits": 10,
+   "error": null
+  },
+  {
+   "provider": "websearch",
+   "query": "DeMoN depth and motion network multi-task supervision depth normals flow camera motion",
+   "file": null,
+   "hits": 10,
+   "error": null
+  },
+  {
+   "provider": "websearch",
+   "query": "arXiv 2411.17190",
+   "file": null,
+   "hits": 10,
+   "error": "结果无关，未能识别该编号"
+  }
+ ],
+ "candidates": [
+  {
+   "title": "Continuous 3D Perception Model with Persistent State (CUT3R)",
+   "arxiv_id": "2501.12387",
+   "version": "v1",
+   "public_date": "2025-01-21",
+   "read": true,
+   "source_id": "2501.12387-v1",
+   "relevance": "high",
+   "concurrent": true
+  },
+  {
+   "title": "DeMoN: Depth and Motion Network for Learning Monocular Stereo",
+   "arxiv_id": "1612.02401",
+   "version": "v2",
+   "public_date": "2017-04-11",
+   "read": true,
+   "source_id": "1612.02401-v2",
+   "relevance": "high",
+   "concurrent": false
+  },
+  {
+   "title": "DUSt3R: Geometric 3D Vision Made Easy",
+   "arxiv_id": "2312.14132",
+   "version": "v3",
+   "public_date": "2024-12-02",
+   "read": true,
+   "source_id": "2312.14132-v3",
+   "relevance": "medium",
+   "concurrent": false
+  },
+  {
+   "title": "FLARE: Feed-forward Geometry, Appearance and Camera Estimation from Uncalibrated Sparse Views",
+   "arxiv_id": "2502.12138",
+   "version": "v1-v3",
+   "public_date": "2025-02",
+   "read": false,
+   "source_id": null,
+   "relevance": "high",
+   "concurrent": true
+  },
+  {
+   "title": "MUSt3R: Multi-view Network for Stereo 3D Reconstruction",
+   "arxiv_id": "2503.01661",
+   "version": "v1",
+   "public_date": "2025-03",
+   "read": false,
+   "source_id": null,
+   "relevance": "low",
+   "concurrent": true
+  }
+ ],
+ "sources": [
+  {
+   "id": "2501.12387-v1",
+   "role": "comparator",
+   "path": "sources/2501.12387-v1.txt",
+   "manifest": "sources/2501.12387-v1.manifest.json",
+   "sha256": "bdfb63f5f6fd24652f07065d50238a339ba6e99d91647fb736ab350fbea7b813",
+   "url": "https://arxiv.org/abs/2501.12387v1",
+   "version": "v1",
+   "arxiv_id": "2501.12387",
+   "public_date": "2025-01-21",
+   "title": "Continuous 3D Perception Model with Persistent State",
+   "date_verified": {
+    "method": "arxiv-abs-history",
+    "value": "2025-01-21",
+    "url": "https://arxiv.org/abs/2501.12387",
+    "checked_at": "2026-10-31T08:04:45+00:00"
+   }
+  },
+  {
+   "id": "1612.02401-v2",
+   "role": "comparator",
+   "path": "sources/1612.02401-v2.txt",
+   "manifest": "sources/1612.02401-v2.manifest.json",
+   "sha256": "a7c8650f58d369c0d59ff6252ad54c895018fea98e134d61e6fbfbe0f301d3fd",
+   "url": "https://arxiv.org/abs/1612.02401v2",
+   "version": "v2",
+   "arxiv_id": "1612.02401",
+   "public_date": "2017-04-11",
+   "title": "DeMoN: Depth and Motion Network for Learning Monocular Stereo",
+   "date_verified": {
+    "method": "arxiv-abs-history",
+    "value": "2017-04-11",
+    "url": "https://arxiv.org/abs/1612.02401",
+    "checked_at": "2026-10-31T08:04:47+00:00"
+   }
+  },
+  {
+   "id": "2312.14132-v3",
+   "role": "comparator",
+   "path": "sources/2312.14132-v3.txt",
+   "manifest": "sources/2312.14132-v3.manifest.json",
+   "url": "https://arxiv.org/abs/2312.14132v3",
+   "version": "v3",
+   "arxiv_id": "2312.14132",
+   "public_date": "2024-12-02",
+   "title": "DUSt3R: Geometric 3D Vision Made Easy",
+   "note": "由并行子代理下载，本条目据其 manifest 重建（非本代理 fetch_arxiv 原样输出）；text_sha256=1c569d57aa375896bd596d700a631edd81e2cabc2ce3be24acc479cf12706505"
+  }
+ ],
+ "comparisons": [
+  {
+   "comparator_id": "2501.12387-v1",
+   "common_mechanism": "同一网络同时输出在闭式关系上冗余的几何量：自身坐标系点图（等价于深度+内参）、世界坐标系点图和相机位姿，并对每个输出分别直接监督；作者明确指出这种冗余有益于训练。",
+   "differences": "CUT3R 的冗余集合是 self-pointmap / world-pointmap / pose，没有 VGGT 的独立深度头、内参回归和跟踪特征；CUT3R 给出的冗余理由是简化训练并能利用部分标注数据集，而不是报告冗余监督本身提升精度的消融；在我读到的部分中没有发现 CUT3R 比较“自身点图+位姿组合”与“直接世界点图头”在推理时孰优。",
+   "problem": "在线/流式连续 3D 感知（循环状态），同样是无需相机参数的前馈重建。",
+   "assumptions": "顺序输入、持久状态；度量尺度点图与位姿；混合部分标注数据集训练。",
+   "guarantee_or_insight": "经验洞见：冗余输出让每个输出都受直接监督，并能扩大可用数据范围。没有理论保证。",
+   "resources": "8 张 A100-80G，多个数据集混合训练（论文中的 Tab. 6 列出数据集）。",
+   "manuscript_side": "VGGT 用 L = Lcamera + Ldepth + Lpmap + λLtrack 联合监督（p.4），Tab. 6 的消融表明去掉相机、深度或跟踪监督后点图精度下降（p.9）；推理时 depth+camera 反投影优于点图头（p.8）。",
+   "comparator_quotes": [
+    {
+     "quote": "we found this redundancy simplifies training. It enables each output to receive direct supervision",
+     "page": 4
+    },
+    {
+     "quote": "facilitates training on datasets with partial annotations, such as those containing only pose or singleview depth",
+     "page": 4
+    }
+   ],
+   "delta_significance": "“冗余输出+分别监督”这一设计思想 CUT3R 已经提出（同期，截止日前约 2 个月）；VGGT 的增量在于：(1) 用消融量化“过完备监督提升点图精度”，(2) 发现并报告推理时“分解路径”（深度+相机反投影）优于直接点图头。第 (2) 点在 CUT3R 中没有看到对应。",
+   "strongest_counterargument": "CUT3R 的 self-pointmap 本质上就是深度+射线，self+pose 组合等价于 VGGT 的反投影路径；如果 CUT3R 在附录或代码中也采用组合路径，那么 VGGT 的第二个发现只是同一设计下的经验观察。另外，CUT3R 属于同期工作，独立性不应被扣分。"
+  },
+  {
+   "comparator_id": "1612.02401-v2",
+   "common_mechanism": "单网络联合预测深度、相机运动以及额外的相关量（法向、光流、匹配置信度）；消融显示附加相关任务（法向、光流损失）提升深度和运动精度，属于“相关多任务监督提升精度”的早期证据。",
+   "differences": "DeMoN 仅处理两视图，使用 CNN 级联（光流→深度/运动）和迭代细化；没有视角不变点图这一冗余输出，所以不存在“反投影 vs 点图头”的比较；辅助量（法向、光流）与主量之间不是 VGGT 所说的闭式完全冗余。",
+   "problem": "两帧 monocular stereo：从未标定的图像对估计深度和相机运动。",
+   "assumptions": "两视图；已知内参（标准化）；尺度通过尺度因子 s 处理。",
+   "guarantee_or_insight": "经验消融：法向估计略微提升全部指标；完整架构（尺度不变损失+法向+光流损失）效果最好。",
+   "resources": "小规模 CNN，数据集为 SUN3D 等（2017 年规模）。",
+   "manuscript_side": "VGGT 把相关多任务监督扩展到多视图大 transformer，并显式利用闭式冗余（相机、深度、点图、轨迹）。",
+   "comparator_quotes": [
+    {
+     "quote": "The network estimates not only depth and motion, but additionally surface normals, optical flow between the images and confidence of the matching.",
+     "page": 1
+    },
+    {
+     "quote": "Estimation of the surface normals slightly improves all results.",
+     "page": 8
+    },
+    {
+     "quote": "the full architecture with the scale invariant loss, normal estimation, and a loss on the flow, leads to the best results",
+     "page": 8
+    }
+   ],
+   "delta_significance": "说明“相关几何量联合监督能提升精度”早有先例，VGGT 在这一点上的原则性新意有限；新意集中在规模、多视图设定和点图冗余下的推理路径选择。",
+   "strongest_counterargument": "DeMoN 的辅助任务不是闭式冗余，而且规模与设定差异巨大，所以只能算一般性的多任务学习先例，不能构成机制重叠。"
+  },
+  {
+   "comparator_id": "2312.14132-v3",
+   "common_mechanism": "DUSt3R 指出相机参数可以从点图闭式恢复（PnP/Procrustes），也就是“点图包含相机信息”这一冗余关系；VGGT 正是在这一关系的基础上提出过完备预测。",
+   "differences": "DUSt3R 只回归点图，相机和焦距靠后处理求解，没有对冗余目标分别监督；VGGT 反过来直接预测相机和深度，并发现分解路径更准。",
+   "problem": "两视图点图回归+全局对齐。",
+   "assumptions": "成对推理、后处理优化。",
+   "guarantee_or_insight": "点图作为统一表示可以推出相机、深度和匹配。",
+   "resources": "多数据集训练，ViT-L 编码器。",
+   "manuscript_side": "VGGT 原文明确引用 DUSt3R 说明相机可由点图通过 PnP 推出（p.3）。",
+   "comparator_quotes": [
+    {
+     "quote": "A more robust solution is finally to rely on RANSAC [30] with PnP [45, 52].",
+     "page": 5
+    }
+   ],
+   "delta_significance": "VGGT 的发现（直接点图头不如深度+相机分解）在经验上与 DUSt3R 的“只用点图”设计相对立，构成有意义的差异。",
+   "strongest_counterargument": "VGGT 的点图头与深度/相机头共享骨干，比较只在 VGGT 内部进行，结论可能依赖其特定架构，不一定能推广为否定 DUSt3R 式表示。"
+  }
+ ],
+ "assessment": "incremental",
+ "rationale": "CUT3R（2025-01-21，同期）已经明确提出预测冗余的 self/world 点图与位姿、对每个输出直接监督，并称“redundancy simplifies training”；DeMoN（2017）早已报告联合预测深度、运动、法向、光流，且附加任务能提升精度。因此“过完备/冗余多任务监督”这一思想本身不新。VGGT 的增量在于：在多视图大 transformer 中用消融（Tab. 6）量化相机/深度/跟踪监督对点图精度的贡献，以及发现推理时深度+相机反投影优于专用点图头；在我读到的前作中没有找到后一个比较。按同期规则，CUT3R 不应否定 VGGT 的独立贡献，所以判为 incremental，而不是 overlap。",
+ "uncertainty": "Semantic Scholar 和 OpenAlex 返回 429，DBLP 解析失败，没能做引用追溯（semantic-refs/cites），覆盖面主要依赖 arXiv 和网页检索。FLARE（2502.12138，同期，先预测相机再预测几何的级联设计，与“分解更容易”的论点最相关）的 PDF 超过 20MB 下载上限，没有阅读，可能削弱 VGGT 第二个发现的新意。CUT3R 只读了方法部分和关键检索段落，没有确认其附录是否比较组合路径与世界点图头。MUSt3R、Fast3R、MV-DUSt3R+ 等同期工作没有阅读。",
+ "coverage": "覆盖：任务术语（联合深度/位姿/点图）、机制术语（冗余监督、反投影 vs 点图）、替代说法（DeMoN 式多任务深度+运动）；全文阅读了 CUT3R v1、DeMoN v2，并通过关键段落检索了 DUSt3R v3。未覆盖：引用图追溯、FLARE 全文、射线图（ray map）类表示工作（如 Cameras as Rays）、单目深度+相机联合模型（如 UniDepth、MoGe 一类）的系统检索。"
+}

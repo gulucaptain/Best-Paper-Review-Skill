@@ -1,0 +1,133 @@
+{
+  "manifest_version": 1,
+  "generated_by": "extract_pdf.py",
+  "tool": "pdftotext version 24.02.0",
+  "pdf_sha256": "88eb2b31beea8f8fb907b1a474fc5497c1910f7354ee231c481e8b046c2b986e",
+  "pdf_name": "1612.02401-v2.pdf",
+  "pages": [
+    {
+      "page": 1,
+      "start": 0,
+      "end": 3655
+    },
+    {
+      "page": 2,
+      "start": 3657,
+      "end": 9508
+    },
+    {
+      "page": 3,
+      "start": 9510,
+      "end": 13538
+    },
+    {
+      "page": 4,
+      "start": 13540,
+      "end": 18442
+    },
+    {
+      "page": 5,
+      "start": 18444,
+      "end": 23252
+    },
+    {
+      "page": 6,
+      "start": 23254,
+      "end": 28814
+    },
+    {
+      "page": 7,
+      "start": 28816,
+      "end": 33002
+    },
+    {
+      "page": 8,
+      "start": 33004,
+      "end": 37097
+    },
+    {
+      "page": 9,
+      "start": 37099,
+      "end": 42971
+    },
+    {
+      "page": 10,
+      "start": 42973,
+      "end": 45657
+    },
+    {
+      "page": 11,
+      "start": 45659,
+      "end": 49451
+    },
+    {
+      "page": 12,
+      "start": 49453,
+      "end": 54057
+    },
+    {
+      "page": 13,
+      "start": 54059,
+      "end": 58179
+    },
+    {
+      "page": 14,
+      "start": 58181,
+      "end": 62668
+    },
+    {
+      "page": 15,
+      "start": 62670,
+      "end": 65567
+    },
+    {
+      "page": 16,
+      "start": 65569,
+      "end": 65990
+    },
+    {
+      "page": 17,
+      "start": 65992,
+      "end": 66469
+    },
+    {
+      "page": 18,
+      "start": 66471,
+      "end": 67139
+    },
+    {
+      "page": 19,
+      "start": 67141,
+      "end": 69890
+    },
+    {
+      "page": 20,
+      "start": 69892,
+      "end": 72514
+    },
+    {
+      "page": 21,
+      "start": 72516,
+      "end": 73446
+    },
+    {
+      "page": 22,
+      "start": 73448,
+      "end": 75589
+    }
+  ],
+  "page_count": 22,
+  "text_sha256": "a7c8650f58d369c0d59ff6252ad54c895018fea98e134d61e6fbfbe0f301d3fd",
+  "low_text_pages": [],
+  "injection_hits": [],
+  "created_at": "2026-10-31T08:04:46+00:00",
+  "url": "https://arxiv.org/abs/1612.02401v2",
+  "arxiv_id": "1612.02401",
+  "version": "v2",
+  "public_date": "2017-04-11",
+  "title": "DeMoN: Depth and Motion Network for Learning Monocular Stereo",
+  "all_versions": {
+    "v1": "2016-12-07",
+    "v2": "2017-04-11"
+  }
+}
